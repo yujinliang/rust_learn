@@ -1,0 +1,1 @@
+/home/yjl/rust_test/rust_mod_study/target/debug/liblip1.rlib: /home/yjl/rust_test/rust_mod_study/lip1/src/caller.rs /home/yjl/rust_test/rust_mod_study/lip1/src/lib.rs /home/yjl/rust_test/rust_mod_study/lip1/src/worker.rs
