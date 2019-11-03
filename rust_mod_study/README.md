@@ -46,12 +46,10 @@ lip3 = {path= "../lip3" }
 
 - 配置`rust workspace`, 在`rust_mod_study/Cargo.toml`中加入以下配置即可，如：
 
-             ```toml
- [workspace]
- members = ["exp", "lip", "lip1", "lip2", "lip3"] 
-             ```
-             
-             
+         ```
+         [workspace]
+         members = ["exp", "lip", "lip1", "lip2", "lip3"] 
+         ```
 
 * `所有的例子代码都在rust_mod_study目录中 `
 
