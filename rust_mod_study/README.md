@@ -20,7 +20,7 @@
 
 ​       特别注意，callerin这个mod必须在caller.rs中以`pub mod callerin;`形式声明，否则外部看不到； 最终模块路径为：`lip3::caller::callerin::call();`
 
-* `rust 2018 edition` 不再需要在根模块中使用extern crate xxx;语法导入第三方包。如在文件main.rs , lib.rs中不再需要extern crate xxx语法导入第三方包, 如: rust_mod_study/exp/src/main.rs 中的extern crate xxx可以去掉了。只需在Cargo.toml中配置好， 然后在代码中以模块路径访问即可，如：modx::mody::modz::fnx()； 也可以use一下，缩短路径。
+* `rust 2018 edition` 不再需要在根模块中使用extern crate xxx;语法导入第三方包。如在文件`main.rs , lib.rs`中不再需要extern crate xxx语法导入第三方包, 如:` rust_mod_study/exp/src/main.rs` 中的extern crate xxx可以去掉了。只需在Cargo.toml中配置好， 然后在代码中以模块路径访问即可，如：modx::mody::modz::fnx()； 也可以use一下，缩短路径。
 
 * rust 如何引用未发布的本地crate, 特别之处在`exp/Cargo.toml`中， 如：
 
@@ -40,18 +40,18 @@ lip3 = {path= "../lip3" }
 
 ```
 
-- 目录结构： Cargo.lock  Cargo.toml  exp  lip  lip1  lip2  lip3  target  在同一个父目录`rust_mod_study`中；其中exp/src/main.rs引用lip开头的所有模块。
+- 目录结构：` Cargo.lock  Cargo.toml  exp  lip  lip1  lip2  lip3  target  `在同一个父目录`rust_mod_study`中；其中`exp/src/main.rs`引用lip开头的所有模块。
 
 
 
 - 配置`rust workspace`, 在`rust_mod_study/Cargo.toml`中加入以下配置即可，如：
 
-                 ```toml
+             ```toml
  [workspace]
- members = ["exp", "lip", "lip1", "lip2", "lip3"]
-                 ```
-
-
+ members = ["exp", "lip", "lip1", "lip2", "lip3"] 
+             ```
+             
+             
 
 * `所有的例子代码都在rust_mod_study目录中 `
 
