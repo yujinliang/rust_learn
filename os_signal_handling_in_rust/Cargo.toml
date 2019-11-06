@@ -1,0 +1,2 @@
+[workspace]
+members = ["ctrlc_1", "ctrlc_channel", "signal_hook", "signal_hook2", "signal_hook_tokio", "signal_hook_cross_beam_channel"]
