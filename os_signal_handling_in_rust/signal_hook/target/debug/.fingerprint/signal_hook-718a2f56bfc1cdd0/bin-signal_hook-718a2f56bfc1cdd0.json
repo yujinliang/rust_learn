@@ -1,0 +1,1 @@
+{"rustc":10683586082858123265,"features":"[]","target":1357908012249745735,"profile":14996655781355331481,"path":1036222786711178230,"deps":[[5342994749397287391,"signal_hook",false,10883038526604302892]],"local":[{"CheckDepInfo":{"dep_info":"debug/.fingerprint/signal_hook-718a2f56bfc1cdd0/dep-bin-signal_hook-718a2f56bfc1cdd0"}}],"rustflags":[],"metadata":11579307947513948447}
