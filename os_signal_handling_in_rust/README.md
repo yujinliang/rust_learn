@@ -104,7 +104,7 @@
 
         > `Solution: the self-pipe trick. Maintain a pipe and select for readability on the pipe input. Inside the SIGCHLD handler, write a byte (non-blocking, just in case) to the pipe output. Done.`
 
-      *  采用`Linux signalfd` 将signal处理转化为文件`IO`事件监听分发，如：`select , epoll`等。
+      *  采用`Linux signalfd` 将signal处理转化为文件`IO`事件监听分发，如：`select , epoll`，channel等
       * 采用`signal-hook 、ctrlc、mio 、 tokio`等crates显著降低Signal复杂度。
 
       
