@@ -47,8 +47,16 @@
 
 4. 不建议用Signal
    * 因为signal不排队，无序，会丢弃，所以不可以用它做可靠计数，比如处理`SIGCHLD`
+   
    * 最好不用signal做进程间通信，不如监听socket或文件描述符
+   
    * 最好不用signal, 或者保持signal handler足够简单，比如只是设定一个标志（`volatile sig_atomit_t`）
+   
+   * 但是对于server programming , 信号：SIGPIPE 必须处理。
+   
+     >  signal(SIGPIPE, SIG_IGN); //on linux.
+     >
+     > So as you can see, solving this issue is *hard*. My recommendation for your code is to use all three techniques: *signal(SIGPIPE)*, s*etsocktopt(SO_NOSIGPIPE)*, and *send(MSG_NOSIGNAL)*, surrounded by the appropriate *#ifdefs*. It's an annoying set of things you have to do, but it's a non-optional thing you need to handle correctly, that must survive later programmers who may not understand this issue.
 
 
 
@@ -149,15 +157,16 @@
       > * `https://www.jianshu.com/p/0cbe7e0c9669`
       > * `https://vorner.github.io/2018/06/28/signal-hook.html`
       > * `http://www.man7.org/linux/man-pages/man7/signal-safety.7.html`
+      > * `https://blog.erratasec.com/2018/10/tcpip-sockets-and-sigpipe.html#.XcjCL99fiUk`
       >
-      > 
-
-      12. Thanks All
-
-          信息资料繁多，网络信息资源更是浩如烟海，故此难以全部列出引用参考出处，在此一并感谢！如有缺漏，十分抱歉，最后感谢所有前辈的付出和心血。
-
+> 
+      
+12. Thanks All
+      
+       信息资料繁多，网络信息资源更是浩如烟海，故此难以全部列出引用参考出处，在此一并感谢！如有缺漏，十分抱歉，最后感谢所有前辈的付出和心血。
    
 
+   
    
 
 
