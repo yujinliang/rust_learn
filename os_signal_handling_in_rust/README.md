@@ -11,7 +11,7 @@
    * `Pthreads`函数族
    * 通过condition variable通知其他线程
    *  `malloc()/free()、exit()`
-   * `printf()/sprintf()、scanf()、strsignal()`、各种log等标准IO库函数，但`write()`可用
+   * `printf()、scanf()、strsignal()`、各种log等标准IO库函数，但`write()`可用
    * `Mutex`等锁，但可用`volatile sig_atomit_t`原子类型。
    * 全局变量（`volatile sig_atomit_t`类型允许使用）
    * 静态变量
@@ -45,7 +45,7 @@
 
 
 
-4. 不建议用Signal
+4. Linux Signal提示
    * 因为signal不排队，无序，会丢弃，所以不可以用它做可靠计数，比如处理`SIGCHLD`
    
    * 最好不用signal做进程间通信，不如监听socket或文件描述符
@@ -57,6 +57,12 @@
      >  signal(SIGPIPE, SIG_IGN); //on linux.
      >
      > So as you can see, solving this issue is *hard*. My recommendation for your code is to use all three techniques: *signal(SIGPIPE)*, s*etsocktopt(SO_NOSIGPIPE)*, and *send(MSG_NOSIGNAL)*, surrounded by the appropriate *#ifdefs*. It's an annoying set of things you have to do, but it's a non-optional thing you need to handle correctly, that must survive later programmers who may not understand this issue.
+     
+   * SIGSTOP and SIGKILL cannot be caught or ignored or blocked!
+   
+   * ##### SIGCONT and SIGSTOP is to be used by Debugger for implementing breaks and continue.
+   
+   
 
 
 
@@ -160,13 +166,13 @@
       > * `https://blog.erratasec.com/2018/10/tcpip-sockets-and-sigpipe.html#.XcjCL99fiUk`
       >
 > 
-      
-12. Thanks All
-      
-       信息资料繁多，网络信息资源更是浩如烟海，故此难以全部列出引用参考出处，在此一并感谢！如有缺漏，十分抱歉，最后感谢所有前辈的付出和心血。
-   
 
-   
+12. Thanks All
+    
+       信息资料繁多，网络信息资源更是浩如烟海，故此难以全部列出引用参考出处，在此一并感谢！如有缺漏，十分抱歉，最后感谢所有前辈的付出和心血。
+
+
+
    
 
 
