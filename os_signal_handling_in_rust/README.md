@@ -15,6 +15,7 @@
    * `Mutex`等锁，但可用`volatile sig_atomit_t`原子类型。
    * 全局变量（`volatile sig_atomit_t`类型允许使用）
    * 静态变量
+   * 一般主流的库和OS System Call都会标注是否满足async-signal-safe function, 如果无法确认，就不要用。
    
    > 原则来讲，signal handler中可调用，要么是`纯代码只引用局部栈资源和状态`，要么是`可重入函数`， 要么是`信号不可中断函数`，只此三者无其他。
 
@@ -50,7 +51,11 @@
 4. Linux Signal提示
    * 因为signal不排队，无序，会丢弃，所以不可以用它做可靠计数，比如处理`SIGCHLD`
    
-   * 最好不用signal做进程间通信，不如监听socket或文件描述符
+   * 最好不用signal做进线程间通信，不如监听socket或文件描述符
+   
+   * 不要使用基于signal实现的定时函数，如：alarm/ualarm/sleep/usleep/timer_create等
+   
+   * 不主动处理各种异常信号，只用默认语义，除非必须处理，如：网络程序必须处理SIGPIPE.
    
    * 最好不用signal, 或者保持signal handler足够简单，比如只是设定一个标志（`volatile sig_atomit_t`）
    
