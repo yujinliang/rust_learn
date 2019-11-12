@@ -11,10 +11,12 @@
    * `Pthreads`函数族
    * 通过condition variable通知其他线程
    *  `malloc()/free()、exit()`
-   * `printf()、scanf()、strsignal()`、各种log等标准IO库函数，但`write()`可用
+   * `printf()、sprintf()、scanf()、strsignal()`、各种log等标准IO库函数，但`write()`可用
    * `Mutex`等锁，但可用`volatile sig_atomit_t`原子类型。
    * 全局变量（`volatile sig_atomit_t`类型允许使用）
    * 静态变量
+   
+   > 原则来讲，signal handler中可调用，要么是`纯代码只引用局部栈资源和状态`，要么是`可重入函数`， 要么是`信号不可中断函数`，只此三者无其他。
 
 
 
