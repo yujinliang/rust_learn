@@ -64,6 +64,8 @@
    
    * ##### SIGCONT and SIGSTOP is to be used by Debugger for implementing breaks and continue.
    
+   * After a fork() in a multithreaded program, the child can safely call only async-signal-safe functions (see signal-safety(7)) until such time as it calls execve(2).
+   
    
 
 
