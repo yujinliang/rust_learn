@@ -250,3 +250,87 @@
 
 
 
+* ## What is unwind safety?, that is panic safe.
+
+          1. Panic可能引发2个问题
+
+> * A data structure is in a temporarily invalid state when the thread panics.
+
+> * This broken invariant is then later observed.
+>
+> 简单讲：由于panic发生， 导致某个元素处于无效状态，而且这个无效元素可以被外部引用到！
+>
+> 反过来讲，只要以上2点同时成立，则必然是unwind not safe。当然就不是panic safe!
+>
+> Types such as `&mut T` and `&RefCell` are examples which are **not** unwind safe. The general idea is that any mutable state which can be shared across `catch_unwind` is not unwind safe by default. This is because it is very easy to witness a broken invariant outside of `catch_unwind` as the data is simply accessed as usual.
+>
+> Types like `&Mutex`, however, are unwind safe because they implement poisoning by default. They still allow witnessing a broken invariant, but they already provide their own "speed bumps" to do so.
+>
+> 共享不可变，可变不共享，按照这个Rust最高哲学原则之一来判定， 通常而言那些`可变且共享`的元素(包括内部可变性)就是不安全的， 故此不满足`UnwindSafe` 。
+
+2. 询问Rust Compiler那些元素是`UnWindSafe`
+
+> ```rust
+> use std::cell::RefCell;
+> use std::sync::Mutex;
+> //do ask rust compiler what types are unwindsafe.
+> fn implements<T: std::panic::UnwindSafe>() {}
+> 
+> fn main() {
+> 
+>     //可变不共享，共享不可变！
+>    //包括内部可变性！
+>    //对于可变且共享的元素，可否证明安全？
+> 
+>    //below all is UnwindSafe.
+>     implements::<Option<i32>>();
+>     implements::<&Option<i32>>();
+>     implements::<&Mutex<i32>>();
+> 
+> //below all is not UnwindSafe.
+>     implements::<&mut i32>();
+>     implements::<&RefCell<i32>>();
+> 
+> }
+> ```
+>
+> 注意：`Mutex`虽然是内部可变且共享元素， 但却是`UnWindSafe`的；当持有这个`Mutex`的线程panic时， 这个`Mutex`通过自身的Poisoned策略， 可以对外部所有线程证明，我中毒了，我被panic毒害了，所以你们可以自己选择是否信任使用我持有的数据！正式因为`Mutex`可以自证清白，所以Rust Compiler认为它是`UnWindSafe`的！由此推到出第3个原则：一个共享可变元素，经历panic后，如果可以对外证明宣称自己已中毒而不会再毒害他人， 则Rust Compiler认为这个元素就是`UnWindSafe` 。此为我的理解，谬误请一笑了之！
+
+> ```rust
+> use std::sync::{Arc, Mutex};
+> use std::thread;
+> 
+> fn main() {
+> 
+>     let lock = Arc::new(Mutex::new(0_u32));
+>     let lock2 = lock.clone();
+> 
+>     let _ = thread::spawn(move || -> () {
+>     // This thread will acquire the mutex first, unwrapping the result of
+>     // `lock` because the lock has not been poisoned.
+>     let _guard = lock2.lock().unwrap();
+> 
+>     // This panic while holding the lock (`_guard` is in scope) will poison
+>     // the mutex.
+>         panic!();
+>     }).join();
+> 
+> // The lock is poisoned by this point, but the returned result can be
+> // pattern matched on to return the underlying guard on both branches.
+>     let mut guard = match lock.lock() {
+>         Ok(guard) => guard,
+>         Err(poisoned) => poisoned.into_inner(),
+>     };
+> 
+>     println!("{}", *guard );
+>     *guard += 1;
+>     println!("{}", *guard );
+> 
+>     assert_eq!(lock.is_poisoned(), true);
+>     println!("poisoned: {}",lock.is_poisoned() );
+> }
+> 
+> ```
+>
+> 
+
