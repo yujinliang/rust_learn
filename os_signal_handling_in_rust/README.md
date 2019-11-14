@@ -132,11 +132,17 @@
 
       
 
-      ##### 9. 我收集整理调试验证了一些Rust Signal 处理的代码例子，希望抛砖引玉。代码目录：`os_signal_handling_in_rust`
+      9. How to terminate the current process gracefully!
+
+      > 大概不严谨思路：以signal handler检测退出信号， 方案一：以全局标志通知各个线程，每个线程自己检测标志，而blocked中的thread不能及时有效检测标志。方案二：以多生产者多消费者Channel通知各个线程，结合mio或tokio Event Loop。方案三：以linux signalfd将信号转为文件描述符事件，结合操作系统select 或epoll。二三方案甚好，可及时通知所有线程主动退出，直到main函数return。从而保证内存和资源被释放， 栈对象析构函数被一一调用。如果调用exit()或abort(),请慎重选择调用点，保证在这点之后，不再有内存和资源没有释放，以及所有栈对象的析构函数都已被调用完毕。Panic 优雅退出思路也大概如此，没有本质区别。
 
       
 
-      10. About Me
+      ##### 10.  我收集整理调试验证了一些Rust Signal 处理的代码例子，希望抛砖引玉。代码目录：`os_signal_handling_in_rust`
+
+      
+
+      11. About Me
 
       > RUST学习随笔，如有谬误，尽请指正，谢谢。
 
@@ -147,11 +153,11 @@
       > 微信：13718438106
 
       > 日期： 2019年11月10日
-
       
-
-      11. Reference List.
-
+      
+      
+      12. Reference List.
+      
       > * The Linux Programming Interface , `Michael Kerrisk`.
       > * Linux多线程服务端编程-使用`muduo C++`网络库， 陈硕.
       > * 深入理解计算机系统，原书第三版，龚奕利，贺莲 译，机械工业出版社.
