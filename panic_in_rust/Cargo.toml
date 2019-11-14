@@ -1,2 +1,2 @@
 [workspace]
-members = ["panic-1", "panic-catch-recover", "panic-handle", "panic-rethrow", "panic-set-hook", "panic-take-hook", "panic-write-to-log", "panic-unwind-safe-test","mutex_poisoned"]
+members = ["panic-1", "panic-catch-recover", "panic-handle", "panic-rethrow", "panic-set-hook", "panic-take-hook", "panic-write-to-log", "panic-unwind-safe-test","mutex_poisoned", "panic-assert-unwind-safe"]

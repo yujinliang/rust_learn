@@ -250,7 +250,7 @@
 
 
 
-* ## What is unwind safety?, that is panic safe.
+* ## What is unwind safety? that is panic safe.
 
           1. Panic可能引发2个问题
 
@@ -330,6 +330,34 @@
 >     println!("poisoned: {}",lock.is_poisoned() );
 > }
 > 
+> ```
+>
+> 3. `AssertUnwindSafe`主动宣称我是`UnWindSafe`的，请Rust Compiler放过我
+>
+> ```rust
+> use std::panic::{self, AssertUnwindSafe};
+> 
+> fn main() {
+> 
+> 
+>     let mut variable = 4;
+>     println!("{}",variable );
+>     // This code will not compile because the closure captures `&mut variable`
+>     // which is not considered unwind safe by default.
+> 
+>     // panic::catch_unwind(|| {
+>     //     variable += 3;
+>     // });
+> 
+>     // This, however, will compile due to the `AssertUnwindSafe` wrapper
+>     let result = panic::catch_unwind(AssertUnwindSafe(|| {
+>         variable += 3;
+>     }));
+> 
+>     println!("{}",variable );
+>     println!("{:?}",result );
+> 
+> }
 > ```
 >
 > 
