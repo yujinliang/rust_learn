@@ -360,5 +360,48 @@
 > }
 > ```
 >
-> 
+> 4. 采用`C++RAII模式`， 当Panic发生时， 那么在Unwind模式下，Rust保证自动调用每一个`栈对象的析构函数`(但forget主动放弃析构函数被调用的对象除外) ， 从而保证内存和各种资源的有效释放清理。 但是如果是`Abort模式` ， 亦或直接调用了exit()或abort()等系统接口， 则进程当即死亡， 故而Rust 没有自动调用析构函数的机会，内存和资源只能泄露了， 由操作系统打扫战场。
+
+
+
+* 代码例子都在目录：panic_in_rust/
+
+
+
+* About Me
+
+  > RUST学习随笔，如有谬误，尽请指正，谢谢。
+
+  > 作者：心尘了
+
+  > email: [285779289@qq.com](mailto:285779289@qq.com)
+
+  > 微信：13718438106
+
+  > 日期： 2019年11月14日
+
+* Reference List.
+
+> * 深入浅出Rust, 范长春著， 机械工业出版社
+> * Rust编程之道，张汉东著，电子工业出版社
+> * `https://doc.rust-lang.org/book/ch09-03-to-panic-or-not-to-panic.html`
+> * `http://rustcc.github.io/rust-by-example/panic.html`
+> * `https://stackoverflow.com/questions/27384824/catching-panic-when-rust-called-from-c-ffi-without-spawning-threads`
+> * `https://stackoverflow.com/questions/30824258/recovering-from-panic-in-another-thread`
+> * `https://stackoverflow.com/questions/26469715/how-do-i-write-a-rust-unit-test-that-ensures-that-a-panic-has-occurred`
+> * `https://doc.rust-lang.org/std/panic/fn.catch_unwind.html`
+> * `https://github.com/rust-lang/rfcs/blob/master/text/1236-stabilize-catch-panic.md`
+> * `https://zhuanlan.zhihu.com/p/53064186`
+> * `https://doc.rust-lang.org/book/ch09-03-to-panic-or-not-to-panic.html`
+> * `https://doc.rust-lang.org/book/ch09-01-unrecoverable-errors-with-panic.html`
+> * `https://stackoverflow.com/questions/42456497/stdresultresult-panic-to-log`
+> * `https://zhuanlan.zhihu.com/p/24546475`
+> * `https://doc.rust-lang.org/std/panic/trait.UnwindSafe.html`
+> * `https://doc.rust-lang.org/std/sync/struct.Mutex.html#method.is_poisoned`
+> * `https://stackoverflow.com/questions/52300517/is-optioni32-unwind-safe`
+> * `https://doc.rust-lang.org/std/process/fn.exit.html`
+> * `https://doc.rust-lang.org/std/process/fn.abort.html`
+> * 百密一疏，恐有疏漏，在此一并全部致谢！衷心感谢前人的付出和心血。
+
+
 
