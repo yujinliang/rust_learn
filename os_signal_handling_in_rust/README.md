@@ -134,7 +134,13 @@
 
       9. How to terminate the current process gracefully!
 
-      > 大概不严谨思路：以signal handler检测退出信号， 方案一：以全局标志通知各个线程，每个线程自己检测标志，而blocked中的thread不能及时有效检测标志。方案二：以多生产者多消费者Channel通知各个线程，结合mio或tokio Event Loop。方案三：以linux signalfd将信号转为文件描述符事件，结合操作系统select 或epoll。二三方案甚好，可及时通知所有线程主动退出，直到main函数return。从而保证内存和资源被释放， 栈对象析构函数被一一调用。如果调用exit()或abort(),请慎重选择调用点，保证在这点之后，不再有内存和资源没有释放，以及所有栈对象的析构函数都已被调用完毕。Panic 优雅退出思路也大概如此，没有本质区别。
+      > 大概不严谨思路：以signal handler检测退出信号， 方案一：以全局标志通知各个线程，每个线程自己检测标志，而blocked中的thread不能及时有效检测标志。方案二：以多生产者多消费者Channel通知各个线程，结合mio或tokio Event Loop。方案三：以linux signalfd将信号转为文件描述符事件，结合操作系统select 或epoll。二三方案甚好，可及时通知所有线程主动退出，直到main函数return。从而保证内存和资源被释放， 栈对象析构函数被一一调用。
+>
+      > 如果调用exit()或abort(),请慎重选择调用点，保证在这点之后，不再有内存和资源没有释放，以及所有栈对象的析构函数都已被调用完毕。Panic 优雅退出思路也大概如此，没有本质区别。
+>
+      > 如何尽可能避免线程被长时间blocked, 大概思路：采用异步api, 同步非阻塞api; 采用select , epoll等IO multiplexing 检测可读可写以及signal等，都可以尽可能避免线程长时间阻塞等待！ 对于有些同步阻塞系统api, 如read()之类, 如果必须要调用， 如果其提供了timeout参数最好，一切搞定！如果没有，则可以设定timer signal 在中断系统调用后，不再restart系统调用,  由调用者手动检测此api的返回值：-1和 errno == EINTR ,则判定被signal中断，此后可以主动检测`退出标志` ，然后决定是否再次调用此api。从而有效避免当前线程被长时间阻塞。
+>
+      > 对于第三方库其通常都会提供API,用于主动优雅退出阻塞等待， 比如退出xxx.Listen，Run, Wait之类。
 
       
 
@@ -147,11 +153,11 @@
       > RUST学习随笔，如有谬误，尽请指正，谢谢。
 
       > 作者：心尘了
-
+      
       > email: [285779289@qq.com](mailto:285779289@qq.com)
-
+      
       > 微信：13718438106
-
+      
       > 日期： 2019年11月10日
       
       
