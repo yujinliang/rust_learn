@@ -1,0 +1,2 @@
+[workspace]
+members = ["panic-1", "panic-catch-recover", "panic-handle", "panic-rethrow", "panic-set-hook", "panic-take-hook", "panic-write-to-log"]
