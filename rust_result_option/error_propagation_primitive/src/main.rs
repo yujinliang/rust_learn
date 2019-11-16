@@ -24,4 +24,5 @@ fn main() {
 
     let r = read_username_from_file();
     println!("{:?}",r );
+    
 }
