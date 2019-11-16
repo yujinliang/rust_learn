@@ -1,0 +1,14 @@
+target/*
+
+Cargo.lock
+
+test/test
+
+sparrow.test
+
+prof.cpu
+
+callgrap.pdf
+
+hello.txt
+
