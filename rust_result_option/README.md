@@ -388,5 +388,243 @@
 
 
 
-* Result<T,E> 不仅可表达有和无，进一步表达错误的种类
+* Result<T,E> 不仅可表达有和无，而且可进一步表达错误的种类
+
+> ```rust
+> //x.unwrap() if x is not Err ,then return the content of an Ok.
+> //if x is Err , then panic with Err as panic message.
+> 
+> let x: Result<u32, &str> = Ok(2);
+> assert_eq!(x.unwrap(), 2);
+> 
+> let x: Result<u32, &str> = Err("emergency failure");
+> x.unwrap(); // panics with `emergency failure`
+> ```
+>
+> ```rust
+> //x.unwrap_err()  if x is Ok(t), then panic with t as panic message.
+> //if x is Err(z) then return z.
+> 
+> let x: Result<u32, &str> = Ok(2);
+> x.unwrap_err(); // panics with `2`
+> 
+> let x: Result<u32, &str> = Err("emergency failure");
+> assert_eq!(x.unwrap_err(), "emergency failure");
+> ```
+>
+> ```rust
+> //x.unwrap_or(y) if x is Ok(t) then return t.
+> //if x is Err then return y.
+> 
+> let optb = 2;
+> let x: Result<u32, &str> = Ok(9);
+> assert_eq!(x.unwrap_or(optb), 9);
+> 
+> let x: Result<u32, &str> = Err("error");
+> assert_eq!(x.unwrap_or(optb), optb);
+> ```
+>
+> ```rust
+> //x.unwrap_or_default() if x is Ok(t), then return t.
+> //is x is Err then return the default value for that type.
+> 
+> //below example , convert a string to integer.
+> let good_year_from_input = "1909";
+> let bad_year_from_input = "190blarg";
+> let good_year = good_year_from_input.parse().unwrap_or_default();
+> let bad_year = bad_year_from_input.parse().unwrap_or_default(); //整数默认值：0
+> 
+> assert_eq!(1909, good_year);
+> assert_eq!(0, bad_year);
+> ```
+>
+> ```rust
+> //x.unwrap_or_else(y_closure) if x is Ok(t) then return t.
+> //if x is Err  则调用闭包y_closure, 并直接返回其执行结果。
+> //注意：此结果为裸值，没有Ok或Err包裹。
+> 
+> fn count(x: &str) -> usize { x.len() }
+> 
+> assert_eq!(Ok(2).unwrap_or_else(count), 2);
+> assert_eq!(Err("foo").unwrap_or_else(count), 3);
+> ```
+>
+> ```rust
+> //x.expect(z) if x is Ok(t) , then return t.
+> //if x is Err(m) then panic with message which includidng m and z
+> 
+> let x: Result<u32, &str> = Err("emergency failure");
+> x.expect("Testing expect"); // panics with `Testing expect: emergency failure`
+> ```
+>
+> ```rust
+> //x.expect_err(y) if x is Ok(t) then panic with message which including t and y.
+> //if x is Err(m) then return m.
+> 
+> let x: Result<u32, &str> = Ok(10);
+> x.expect_err("Testing expect_err"); // panics with `Testing expect_err: 10`
+> ```
+>
+> 
+
+* Result<T,E> Combinator组合子
+
+> ```rust
+> //x.and(y) if x and y are both Ok, then return y.
+> //如果x或者y 其中一个为Err, 另一个为Ok, 则返回Err那个。
+> //如果x和y都是Err, 则返回x。
+> 
+> let x: Result<u32, &str> = Ok(2);
+> let y: Result<&str, &str> = Err("late error");
+> assert_eq!(x.and(y), Err("late error"));
+> 
+> let x: Result<u32, &str> = Err("early error");
+> let y: Result<&str, &str> = Ok("foo");
+> assert_eq!(x.and(y), Err("early error"));
+> 
+> let x: Result<u32, &str> = Err("not a 2");
+> let y: Result<&str, &str> = Err("late error");
+> assert_eq!(x.and(y), Err("not a 2"));
+> 
+> let x: Result<u32, &str> = Ok(2);
+> let y: Result<&str, &str> = Ok("different result type");
+> assert_eq!(x.and(y), Ok("different result type"));
+> ```
+>
+> ```rust
+> //x.and_then(y_closure)  if x is Ok 则调用闭包y_closure并返回闭包执行结果。
+> //if x is Err then return x.
+> 
+> fn sq(x: u32) -> Result<u32, u32> { Ok(x * x) }
+> fn err(x: u32) -> Result<u32, u32> { Err(x) }
+> 
+> assert_eq!(Ok(2).and_then(sq).and_then(sq), Ok(16));
+> assert_eq!(Ok(2).and_then(sq).and_then(err), Err(4));
+> assert_eq!(Ok(2).and_then(err).and_then(sq), Err(2));
+> assert_eq!(Err(3).and_then(sq).and_then(sq), Err(3));
+> ```
+>
+> ```rust
+> //x.or(y) 如果x 或者 y 有一个为Ok,另一个为Err, 则总是返回Ok那个。
+> //如果x和y 同为Ok, 则返回x.
+> //如果x和y 同为Err, 则返回y.
+> //总结：总是返回Ok的那个， 如果大家都Ok, 则返回第一个Ok； 如果大家都Err, 则返回最后那个Err.
+> //左为先， 右为后。
+> 
+> let x: Result<u32, &str> = Ok(2);
+> let y: Result<u32, &str> = Err("late error");
+> assert_eq!(x.or(y), Ok(2));
+> 
+> let x: Result<u32, &str> = Err("early error");
+> let y: Result<u32, &str> = Ok(2);
+> assert_eq!(x.or(y), Ok(2));
+> 
+> let x: Result<u32, &str> = Err("not a 2");
+> let y: Result<u32, &str> = Err("late error");
+> assert_eq!(x.or(y), Err("late error"));
+> 
+> let x: Result<u32, &str> = Ok(2);
+> let y: Result<u32, &str> = Ok(100);
+> assert_eq!(x.or(y), Ok(2));
+> ```
+>
+> ```rust
+> //x.or_else(y_closure) if x is Err 则调用闭包y_closure,并返回执行结果。
+> //if x is Ok, then return x.
+> 
+> fn sq(x: u32) -> Result<u32, u32> { Ok(x * x) }
+> fn err(x: u32) -> Result<u32, u32> { Err(x) }
+> 
+> assert_eq!(Ok(2).or_else(sq).or_else(sq), Ok(2));
+> assert_eq!(Ok(2).or_else(err).or_else(sq), Ok(2));
+> assert_eq!(Err(3).or_else(sq).or_else(err), Ok(9));
+> assert_eq!(Err(3).or_else(err).or_else(err), Err(3));
+> ```
+>
+> ```rust
+> //x.ok() if x is Ok(t) then return Some(t).
+> //if x is Err, then return None.
+> 
+> let x: Result<u32, &str> = Ok(2);
+> assert_eq!(x.ok(), Some(2));
+> 
+> let x: Result<u32, &str> = Err("Nothing here");
+> assert_eq!(x.ok(), None);
+> ```
+>
+> ```rust
+> // x.map(y_closure)  if x is Ok then 调用闭包y_closure 并将Result返回。
+> //if x is Err then return x.
+> 
+>  let line = "1\n2\n3\n4\nx\n";
+> 
+>  for num in line.lines() {
+>      match num.parse::<i32>().map(|i| i * 2) {
+>          Ok(n) => println!("{}", n),
+>          Err(m) => { println!("{:?}",m );}
+>      }
+>  }
+> ```
+>
+> ```rust
+> //x.map_err(y_closure) if x is Ok , then return x.
+> //if x is Err(m) 则调用闭包，并以m为实参， 然后返回Err(闭包执行结果)
+> 
+> fn stringify(x: u32) -> String { format!("error code: {}", x) }
+> 
+> let x: Result<u32, u32> = Ok(2);
+> assert_eq!(x.map_err(stringify), Ok(2));
+> 
+> let x: Result<u32, u32> = Err(13);
+> assert_eq!(x.map_err(stringify), Err("error code: 13".to_string()));
+> ```
+>
+> ```rust
+> //x.map_or_else(error_closure, map_closure) is x is Ok 则调用map_closure返回结果。
+> //if x is Err , 则调用error_closure返回结果
+> //注意以上闭包执行结果直接返回，没有Ok或Err包装。
+> 
+> #![feature(result_map_or_else)]
+> let k = 21;
+> 
+> let x : Result<_, &str> = Ok("foo");
+> assert_eq!(x.map_or_else(|e| k * 2, |v| v.len()), 3);
+> 
+> let x : Result<&str, _> = Err("bar");
+> assert_eq!(x.map_or_else(|e| k * 2, |v| v.len()), 42);
+> ```
+>
+> ```rust
+> //Converts from &mut Result<T, E> to Result<&mut T, &mut E>.
+> 
+> fn mutate(r: &mut Result<i32, i32>) {
+>  match r.as_mut() {
+>      Ok(v) => *v = 42,
+>      Err(e) => *e = 0,
+>  }
+> }
+> 
+> let mut x: Result<i32, i32> = Ok(2);
+> mutate(&mut x);
+> assert_eq!(x.unwrap(), 42);
+> 
+> let mut x: Result<i32, i32> = Err(13);
+> mutate(&mut x);
+> assert_eq!(x.unwrap_err(), 0);
+> ```
+>
+> ```rust
+> //有待验证...
+> //as_ref : Converts from &Result<T, E> to Result<&T, &E>.
+> //as_deref: Converts from Result<T, E> (or &Result<T, E>) to Result<&T::Target, &E::Target>.
+> //as_deref_err: Converts from Result<T, E> (or &Result<T, E>) to Result<&T, &E::Target>.
+> //as_deref_mut: Converts from Result<T, E> (or &mut Result<T, E>) to Result<&mut T::Target, &mut E::Target>.
+> //as_deref_mut_err: Converts from Result<T, E> (or &mut Result<T, E>) to Result<&mut T, &mut E::Target>.
+> //as_deref_mut_ok: Converts from Result<T, E> (or &mut Result<T, E>) to Result<&mut T::Target, &mut E>.
+> //as_deref_ok: Converts from Result<T, E> (or &Result<T, E>) to Result<&T::Target, &E>.
+> ```
+>
+> [Reference]
+>
+> > `https://doc.rust-lang.org/std/result/enum.Result.html`
 
