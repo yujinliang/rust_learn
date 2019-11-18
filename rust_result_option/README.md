@@ -9,23 +9,37 @@
 > 
 > fn read_username_from_file() -> Result<String, io::Error> {
 > 
->     let f = File::open("hello.txt");
+>  let f = File::open("hello.txt");
 > 
->     let mut f = match f { //此处match就是?的实现方法。
->         Ok(file) => file,
->         Err(e) => return Err(e),
->     };
+>  let mut f = match f { //此处match就是?的实现方法。
+>      Ok(file) => file,
+>      Err(e) => return Err(e), //std::ops::Try会自动做Err type 转换。
+>  };
 > 
->     let mut s = String::new();
+>  let mut s = String::new();
 > 
->     match f.read_to_string(&mut s) {
->         Ok(_) => Ok(s),
->         Err(e) => Err(e),
->     }
+>  match f.read_to_string(&mut s) {
+>      Ok(_) => Ok(s),
+>      Err(e) => Err(e),
+>  }
 > }
 > ```
 >
 > 注意： 第一个match的逻辑就是问号?的实现，问号？只是一个语法糖。如果`Ok`,则返回`Ok`内包含的Value; 如果Err, 则直接返回此Err. [**The** **?** **Operator Can Only Be Used in Functions That Return** **Result**](https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#the--operator-can-only-be-used-in-functions-that-return-result)
+>
+> # Trait [std](https://doc.rust-lang.org/std/index.html)::[ops](https://doc.rust-lang.org/std/ops/index.html)::[Try](https://doc.rust-lang.org/std/ops/trait.Try.html)
+>
+> This is a nightly-only experimental API. 一个类型只要是实现了这个trait, 则可以对其使用? 
+>
+> Applies the "?" operator. A return of `Ok(t)` means that the execution should continue normally, and the result of `?` is the value `t`. A return of `Err(e)` means that execution should branch to the innermost enclosing `catch`, or return from the function.
+>
+> If an `Err(e)` result is returned, the value `e` will be "wrapped" in the return type of the enclosing scope (which must itself implement `Try`). Specifically, the value `X::from_error(From::from(e))` is returned, where `X` is the return type of the enclosing function.
+>
+> [Reference]
+>
+> `https://doc.rust-lang.org/std/ops/trait.Try.html#tymethod.into_result`
+>
+> 
 
 
 
