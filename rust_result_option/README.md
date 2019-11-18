@@ -25,7 +25,7 @@
 > }
 > ```
 >
-> 注意： 第一个match的逻辑就是问号?的实现，问号？只是一个语法糖。如果`Ok`,则返回`Ok`内包含的Value; 如果Err, 则直接返回此Err. [**The** **?** **Operator Can Only Be Used in Functions That Return** **Result**](https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#the--operator-can-only-be-used-in-functions-that-return-result)
+> 注意： 第一个match的逻辑就是问号?的实现，问号？只是一个语法糖。如果`Ok`,则返回`Ok`内包含的Value; 如果Err, 则直接返回此Err. 
 >
 > # Trait [std](https://doc.rust-lang.org/std/index.html)::[ops](https://doc.rust-lang.org/std/ops/index.html)::[Try](https://doc.rust-lang.org/std/ops/trait.Try.html)
 >
@@ -34,6 +34,67 @@
 > Applies the "?" operator. A return of `Ok(t)` means that the execution should continue normally, and the result of `?` is the value `t`. A return of `Err(e)` means that execution should branch to the innermost enclosing `catch`, or return from the function.
 >
 > If an `Err(e)` result is returned, the value `e` will be "wrapped" in the return type of the enclosing scope (which must itself implement `Try`). Specifically, the value `X::from_error(From::from(e))` is returned, where `X` is the return type of the enclosing function.
+>
+> 注意让Option<T>也支持问号语法糖还属于实验特性！需要#![feature(try_trait)]来打开新特性。Rust 1.39 stable中尚未合并此特性。对于Option<T> 应用问号：如果是Some(t) 则取出t; 如果是None则return NoneError.
+>
+> > [需要切换到rust nightly]
+> >
+> > $ rustup install nightly
+> >
+> > $ rustup default nightly
+> >
+> > 
+>
+> [Example]
+>
+> ```rust
+> #![feature(try_trait)]
+> use std::option::NoneError;
+> 
+> #[derive(Debug)]
+> enum MyError {
+>     NE(NoneError)
+> }
+> 
+> impl std::fmt::Display for MyError {
+> 
+>     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std:: fmt::Result {
+>         write!(f, "{:?}", self)
+>     }
+> }
+> 
+> impl From<NoneError> for MyError {
+> 
+>     fn from(error: NoneError) -> Self {
+>         MyError::NE(error)
+>     }
+> }
+> 
+> fn test_option_wenhao() -> Option<i32> {
+> 
+>     //Some(3)
+>     None
+> }
+> 
+> fn test() -> Result<i32,  MyError> {
+>     //if  the result is Ok(t) then  take out  the content of the  Ok : t;
+>     //if the result is None then  break and return NoneError  right now.
+>     let r = 4 +  test_option_wenhao()? + 3;
+> 
+>     let rr = {
+>                     let t =  r + test_option_wenhao()? ;
+>                     println!("inter inter continue: {}",t );
+>                     t
+>     };
+>     println!("inter continue: {:?}",rr );
+>     Ok(rr)
+> }
+> 
+> fn main() {
+>     let r = test();
+>     println!("main: {:?}",r );
+> }
+> ```
 >
 > [Reference]
 >
