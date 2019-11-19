@@ -29,7 +29,7 @@
 >
 > # Trait [std](https://doc.rust-lang.org/std/index.html)::[ops](https://doc.rust-lang.org/std/ops/index.html)::[Try](https://doc.rust-lang.org/std/ops/trait.Try.html)
 >
-> This is a nightly-only experimental API. 一个类型只要是实现了这个trait, 则可以对其使用? 
+> This is a nightly-only experimental API. 一个类型只要是实现了这个trait, 则可以对其使用? 语法糖。
 >
 > Applies the "?" operator. A return of `Ok(t)` means that the execution should continue normally, and the result of `?` is the value `t`. A return of `Err(e)` means that execution should branch to the innermost enclosing `catch`, or return from the function.
 >
@@ -722,4 +722,47 @@
 > ​		另外一点需要使用习惯的就是表达式中Option<T>,Result<T,E>等可以相互转化，并且可以相互组合，
 >
 > ​        连成一串！写Rust代码就好像在做代数运算！
+
+
+
+* All Example Code in folder: rust_result_option
+* About Me
+
+> RUST学习随笔，如有谬误，尽请指正，谢谢。
+
+> 作者：心尘了
+
+> email: [285779289@qq.com](mailto:285779289@qq.com)
+
+> 微信：13718438106
+
+> 日期： 2019年11月14日
+
+
+
+* [Reference]
+
+  `深入浅出Rust, 范长春著， 机械工业出版社`
+
+  `Rust编程之道，张汉东著，电子工业出版社`
+
+  `https://doc.rust-lang.org/std/option/enum.Option.html`
+
+  `https://doc.rust-lang.org/std/result/enum.Result.html`
+
+  `https://doc.rust-lang.org/book/ch09-00-error-handling.html`
+
+  `https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html`
+
+  `https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#handling-potential-failure-with-the-result-type`
+
+  `https://doc.rust-lang.org/book/ch17-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types`
+
+  `https://learning-rust.github.io/docs/e6.combinators.html`
+
+  `https://learnku.com/articles/30022`
+
+  `https://blog.csdn.net/qq_29343201/article/details/79285562`
+
+  
 
