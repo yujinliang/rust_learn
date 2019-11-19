@@ -1,5 +1,3 @@
-#![deny(warnings)]
-
 use serde::{ Deserialize};
 
 /// This is what we're going to decode into. Each field is optional, meaning
@@ -14,10 +12,6 @@ struct Config {
         db_shard_schema_list:Option<Vec<DBShardSchemaConfig>>,
 }
 
-/// Sub-structs are decoded from tables, so this will decode from the `[server]`
-/// table.
-///
-/// Again, each field is optional, meaning they don't have to be present.
 #[derive(Debug, Deserialize)]
 struct GlobalConfig {
     log_path: Option<String>,
