@@ -11,7 +11,7 @@ struct Config {
         web:Option<WebConfig>,
         db_node_list:Option<Vec<DBNodeConfig>>,
         db_cluster_list:Option<Vec<DBClusterConfig>>,
-        schema_list:Option<Vec<DBShardSchemaConfig>>,
+        db_shard_schema_list:Option<Vec<DBShardSchemaConfig>>,
 }
 
 /// Sub-structs are decoded from tables, so this will decode from the `[server]`
@@ -171,7 +171,7 @@ fn main() {
 
     #define db shard router info for each proxy user.
     #the "owner" which  is a proxy user  name.
-    [[schema_list]]
+    [[db_shard_schema_list]]
     owner = "root"
     db = "test_db"
     table = "test_table"
@@ -182,7 +182,7 @@ fn main() {
     shard_type = "hash"
 
     #---
-     [[schema_list]]
+     [[db_shard_schema_list]]
     owner = "root"
     db = "sparrow"
     table = "date_day_table"
@@ -193,7 +193,7 @@ fn main() {
      # which means left close and right  open range , such as: [ 20191102, 20201102)
     day_range = [ "2019-11-02", "2020-11-02", "2021-11-02", "2022-11-02"]
     #---
-    [[schema_list]]
+    [[db_shard_schema_list]]
     owner = "root"
     db = "ordinal_db"
     table = "test_table"
