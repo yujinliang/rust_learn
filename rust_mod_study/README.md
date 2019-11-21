@@ -51,7 +51,20 @@ lip3 = {path= "../lip3" }
          members = ["exp", "lip", "lip1", "lip2", "lip3"] 
          ```
 
-* `所有的例子代码都在rust_mod_study目录中 `
+* 在rust_mod_study/exp中给出一个例子用于说明：在同一个crate下各个子mod间的可见性和引用方法
+
+  1. 首先各个子mod都需要在main.rs(属于crate顶级mod)中声明自己， 如： mod producer; mod consumer; mod switcher;等 ，只有这样各个子mod才能看到彼此，才能引用。
+  2. 每一个子mod可以用use crate::xxx形式引用在1.中声明的mod, 如：use crate::producer;等。
+  3. 每一个子mod自身默认都是自私的，除非以pub , pub use等打开为公用。
+  4. 对于pub struct 其field默认仍然是private的，需要pub声明为公用。
+
+  总结： 父mod可以引用其子mod, 但是在父模块中仍然需要声明后方可应用子模块，如：`mod 子模块名` ；而每一个子模块，只可以看到在其父模块中声明过的子mod,  但是仍需`use crate::子模块名` 来引用一下后方可用。
+
+  我是在rust 1.39中做的实验， 时间急促，水平有限，如有谬误，欢迎指正，感谢啦！
+
+  
+
+* 所有的例子代码都在rust_mod_study目录中 `
 
 
 
