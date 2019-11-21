@@ -3,6 +3,10 @@ extern crate lip1;
 extern crate lip2;
 //extern crate lip3; //for rust 2018 edition
 
+mod consumer;
+mod producer;
+mod switcher;
+
 fn main() {
     println!("exp mod:");
 
@@ -23,4 +27,8 @@ fn main() {
 
     println!("lip3 mod");
     lip3::caller::callerin::call();
+
+    println!("exp mod");
+    consumer::cons::Consumer::call_other_mod();
+    producer::Producer::call_other_mod();
 }
