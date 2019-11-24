@@ -7,13 +7,14 @@ pub enum MyError{
     Test3(i32),
     Test4(&'static str),
     Test5(String),
-    Io(std::io::Error),
+    //Io(std::io::Error),
+    Io(Box<dyn std::error::Error+Send+Sync>),
 }
 
 impl std::convert::From<std::io::Error> for MyError {
 
     fn from(e: std::io::Error) -> Self {
-        MyError::Io(e)
+        MyError::Io(Box::new(e))
     }
 }
 
