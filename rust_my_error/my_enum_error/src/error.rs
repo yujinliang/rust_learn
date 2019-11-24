@@ -7,14 +7,14 @@ pub enum MyError{
     Test3(i32),
     Test4(&'static str),
     Test5(String),
-    //Io(std::io::Error),
-    Io(Box<dyn std::error::Error+Send+Sync>),
+    Io(std::io::Error),
+    Other(Box<dyn std::error::Error+Send+Sync>),
 }
 
 impl std::convert::From<std::io::Error> for MyError {
 
     fn from(e: std::io::Error) -> Self {
-        MyError::Io(Box::new(e))
+        MyError::Io(e)
     }
 }
 
@@ -29,6 +29,7 @@ impl std::fmt::Display for MyError {
             MyError::Test4(ref s) => write!(f, "MyError::Test4: {}", s),
             MyError::Test5(ref s) => write!(f, "MyError::Test5: {}", s),
             MyError::Io(e) => e.fmt(f),
+            MyError::Other(e) => e.fmt(f),
         }
     }
 }
@@ -43,6 +44,7 @@ impl std::error::Error for MyError {
             MyError::Test4(..) => None,
             MyError::Test5(..) => None,
             MyError::Io(e) => e.source(),
+            MyError::Other(e) => e.source(),
 
         }
     }
