@@ -161,13 +161,13 @@
       
       > 微信：13718438106
       
-      > 日期： 2019年11月10日
-
-
-​      
-​      
-      12. Reference List.
       
+
+
+​      
+​      
+​      12. Reference List.
+​      
       > * The Linux Programming Interface , `Michael Kerrisk`.
       > * Linux多线程服务端编程-使用`muduo C++`网络库， 陈硕.
       > * 深入理解计算机系统，原书第三版，龚奕利，贺莲 译，机械工业出版社.
