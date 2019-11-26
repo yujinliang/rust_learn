@@ -7,6 +7,17 @@ pub struct MyStructError {
     repr: Repr,
 }
 
+impl MyStructError {
+
+    pub fn kind(&self) -> ErrorKind {
+        match self.repr {
+            Repr::Os(..) => ErrorKind::Os, //此处应获取OS的enum error kind, 如:  Repr::Os(code) => sys::decode_error_kind(code),
+            Repr::Custom(ref c) => c.kind,
+            Repr::Simple(kind) => kind,
+        }
+    }
+}
+
 #[derive(Debug)]
 enum Repr {
     Os(i32), //用于包含底层OS返回的错误码.
@@ -25,13 +36,16 @@ struct Custom {
 pub enum ErrorKind {
 
     NotFound,
+    Os,
     Other,
 }
 
 impl ErrorKind {
+    
     pub(crate) fn as_str(&self) -> &'static str {
         match *self {
             ErrorKind::NotFound => "entity not found",
+            ErrorKind::Os => "os error",
             ErrorKind::Other => "other os error",
         }
     }
@@ -91,4 +105,9 @@ pub fn test() {
     let e2 = MyStructError { repr: Repr::Custom(Box::new(Custom{kind:  ErrorKind::Other, error:Box::new(other)})),};   
     println!("{}", e2);
 
+}
+
+pub fn get_a_e () -> MyStructError {
+
+    MyStructError{repr: Repr::Os(-1)}
 }
