@@ -327,7 +327,7 @@
 > ```
 >
 > ```rust
-> //x.map(y_closure) 以x为实参调用闭包y_closure， 返回闭包执行结果，形如：Some(z) ，z为闭包计算结果值。
+> //x.map(y_closure) 以x内包含的值为实参调用闭包y_closure， 返回闭包执行结果，形如：Some(z) ，z为闭包计算结果值。
 > //convert Option<T> to Option<U>
 > 
 > fn main() {
@@ -356,7 +356,7 @@
 > ```
 >
 > ```rust
-> //x.map_or( y_default, z_closure) if x is not None , 则以x为实参调用闭包z_closure，并返回结果
+> //x.map_or( y_default, z_closure) if x is not None , 则以x内包含的值为实参调用闭包z_closure，并返回结果
 > //if x is None then return y_default .
 > //注意：结果没有用Some包裹。
 > let x = Some("foo");
