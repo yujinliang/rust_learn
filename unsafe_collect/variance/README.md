@@ -32,7 +32,7 @@
 
 > Rust官方文档关于Variance给出了一个表：
 
-|      |                 | 'a'       | T               | U         |
+|      |                 | 'a        | T               | U         |
 | ---- | --------------- | --------- | --------------- | --------- |
 | *    | &'a T           | covariant | covariant       |           |
 | *    | `&'a mut T`     | covariant | invariant       |           |
