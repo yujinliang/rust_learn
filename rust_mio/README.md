@@ -396,13 +396,13 @@ impl Evented for Deadline {
     fn register(&self, poll: &Poll, token: Token, interest: Ready, opts: PollOpt)
         -> io::Result<()>
     {
-        self.registration.register(poll, token, interest, opts)
+        poll.register(&self.registration, token, interest, opts)
     }
   //重注册自定义事件
     fn reregister(&self, poll: &Poll, token: Token, interest: Ready, opts: PollOpt)
         -> io::Result<()>
     {
-        self.registration.reregister(poll, token, interest, opts)
+        poll.reregister(&self.registration, token, interest, opts)
     }
    //注销自定义事件
     fn deregister(&self, poll: &Poll) -> io::Result<()> {
@@ -410,4 +410,175 @@ impl Evented for Deadline {
     }
 }
 ```
+
+* set_readiness 错误例子，不该对事件派发顺序做任何假设和依赖，更不可以作为同步机制。
+
+  所以事件派发出去了， 不要假设什么时候一定到！
+
+> There is no guarantee that `readiness` establishes any sort of memory ordering. Any concurrent data access must be synchronized using another strategy.
+>
+> There is also no guarantee as to when the readiness event will be delivered to poll. A best attempt will be made to make the delivery in a "timely" fashion. For example, the following is **not** guaranteed to work:
+
+```rust
+use mio::{Events, Registration, Ready, Poll, PollOpt, Token};
+
+let poll = Poll::new()?;
+let (registration, set_readiness) = Registration::new2();
+
+poll.register(&registration,
+              Token(0),
+              Ready::readable(),
+              PollOpt::edge())?;
+
+// Set the readiness, then immediately poll to try to get the readiness
+// event
+set_readiness.set_readiness(Ready::readable())?;
+
+let mut events = Events::with_capacity(1024);
+poll.poll(&mut events, None)?;
+
+// There is NO guarantee that the following will work. It is possible
+// that the readiness event will be delivered at a later time.
+let event = events.get(0).unwrap();
+assert_eq!(event.token(), Token(0));
+assert!(event.readiness().is_readable());
+```
+
+* set_readiness 错误例子
+
+```rust
+use mio::{Registration, Ready};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+    let (_registration, set_readiness) = Registration::new2();
+
+    assert!(set_readiness.readiness().is_empty());
+
+    set_readiness.set_readiness(Ready::readable())?; //不要假设事件立刻就被派发了!
+    assert!(set_readiness.readiness().is_readable());// 事件可能没有派发到，也可能已经到了，总之不能依赖这种错误的	 //顺序假设。
+    Ok(())
+}
+
+```
+
+总之自定义事件和系统事件都需要implement Trait mio::event::Evented; 这样才可以注册到poll,实现监听；比如: mio::net::TcpStream
+
+---
+
+* # mio::net
+
+  | [TcpListener](https://docs.rs/mio/0.6.21/mio/net/struct.TcpListener.html) | A structure representing a socket server                     |
+  | ------------------------------------------------------------ | ------------------------------------------------------------ |
+  | [TcpStream](https://docs.rs/mio/0.6.21/mio/net/struct.TcpStream.html) | A non-blocking TCP stream between a local socket and a remote socket. |
+  | [UdpSocket](https://docs.rs/mio/0.6.21/mio/net/struct.UdpSocket.html) | A User Datagram Protocol socket.                             |
+
+  非常简洁，用于提供跨平台统一一致的非阻塞socket API. 使用时遇到问题，请参阅`https://docs.rs/mio/0.6.21/mio/struct.Poll.html#portability`
+
+1. socket监听
+
+```rust
+use mio::{Events, Ready, Poll, PollOpt, Token};
+use mio::net::TcpListener;
+use std::time::Duration;
+
+let listener = TcpListener::bind(&"127.0.0.1:34255".parse()?)?;
+
+let poll = Poll::new()?;
+let mut events = Events::with_capacity(128);
+
+// Register the socket with `Poll`
+poll.register(&listener, Token(0), Ready::readable(),
+              PollOpt::edge())?;
+
+poll.poll(&mut events, Some(Duration::from_millis(100)))?;
+
+// There may be a socket ready to be accepted
+```
+
+2. tcp流
+
+```rust
+use mio::{Events, Ready, Poll, PollOpt, Token};
+use mio::net::TcpStream;
+use std::time::Duration;
+
+let stream = TcpStream::connect(&"127.0.0.1:34254".parse()?)?;
+
+let poll = Poll::new()?;
+let mut events = Events::with_capacity(128);
+
+// Register the socket with `Poll`
+poll.register(&stream, Token(0), Ready::writable(),
+              PollOpt::edge())?;
+
+poll.poll(&mut events, Some(Duration::from_millis(100)))?;
+
+// The socket might be ready at this point
+```
+
+3. udp短报文
+
+```rust
+// An Echo program:
+// SENDER -> sends a message.
+// ECHOER -> listens and prints the message received.
+
+use mio::net::UdpSocket;
+use mio::{Events, Ready, Poll, PollOpt, Token};
+use std::time::Duration;
+
+const SENDER: Token = Token(0);
+const ECHOER: Token = Token(1);
+
+// This operation will fail if the address is in use, so we select different ports for each
+// socket.
+let sender_socket = UdpSocket::bind(&"127.0.0.1:0".parse()?)?;
+let echoer_socket = UdpSocket::bind(&"127.0.0.1:0".parse()?)?;
+
+// If we do not use connect here, SENDER and ECHOER would need to call send_to and recv_from
+// respectively.
+sender_socket.connect(echoer_socket.local_addr().unwrap())?;
+
+// We need a Poll to check if SENDER is ready to be written into, and if ECHOER is ready to be
+// read from.
+let poll = Poll::new()?;
+
+// We register our sockets here so that we can check if they are ready to be written/read.
+poll.register(&sender_socket, SENDER, Ready::writable(), PollOpt::edge())?;
+poll.register(&echoer_socket, ECHOER, Ready::readable(), PollOpt::edge())?;
+
+let msg_to_send = [9; 9];
+let mut buffer = [0; 9];
+
+let mut events = Events::with_capacity(128);
+loop {
+    poll.poll(&mut events, Some(Duration::from_millis(100)))?; //阻塞当前线程，直至事件到达，或timeout.
+    for event in events.iter() {
+        match event.token() {
+            // Our SENDER is ready to be written into.
+            SENDER => {
+                let bytes_sent = sender_socket.send(&msg_to_send)?;
+                assert_eq!(bytes_sent, 9);
+                println!("sent {:?} -> {:?} bytes", msg_to_send, bytes_sent);
+            },
+            // Our ECHOER is ready to be read from.
+            ECHOER => {
+                let num_recv = echoer_socket.recv(&mut buffer)?;
+                println!("echo {:?} -> {:?}", buffer, num_recv);
+                buffer = [0; 9];
+            }
+            _ => unreachable!()
+        }
+    }
+}
+```
+
+`都支持ipv6, ssl`
+
+虽然在调用poll()之前做了一些socket初始化、监听、链接等启动操作， 但是直到调用poll()之时才是正真的启动运转，因为mio以已经做好了派发事件的准备！一切可以开始运转起来了！一定要深刻理解这一点，因为mio的一切都是围绕event loop运转的！
+
+* Reference
+
+  `https://docs.rs/mio/0.6.21/mio/index.html`
 
