@@ -586,6 +586,10 @@ loop {
 
 虽然在调用poll()之前做了一些socket初始化、监听、链接等启动操作， 但是直到调用poll()之时才是正真的启动运转，因为mio以已经做好了派发事件的准备！一切可以开始运转起来了！一定要深刻理解这一点，因为mio的一切都是围绕event loop运转的！
 
+`另一个mio好文章: https://sergey-melnychuk.github.io/2019/08/01/rust-mio-tcp-server/`
+
+`https://github.com/sergey-melnychuk/mio-tcp-server`
+
 * Reference
 
   `https://docs.rs/mio/0.6.21/mio/index.html`
