@@ -590,7 +590,157 @@ loop {
 
 `https://github.com/sergey-melnychuk/mio-tcp-server`
 
+```rust
+// Benchmarks:
+// $ ab -n 1000000 -c 128 -k http://127.0.0.1:8080/
+// $ wrk -d 30s -t 4 -c 128 http://127.0.0.1:8080/
+//单线程eventloop.
+
+use mio::net::{TcpListener, TcpStream};
+use mio::{Poll, Token, Ready, PollOpt, Events};
+use std::collections::HashMap;
+use std::io::{Read, Write};
+
+static RESPONSE: &str = "HTTP/1.1 200 OK
+Content-Type: text/html
+Connection: keep-alive
+Content-Length: 6
+
+hello
+";
+
+fn is_double_crnl(window: &[u8]) -> bool {
+    window.len() >= 4 &&
+        (window[0] == '\r' as u8) &&
+        (window[1] == '\n' as u8) &&
+        (window[2] == '\r' as u8) &&
+        (window[3] == '\n' as u8)
+}
+
+fn main() {
+    let address = "0.0.0.0:8080";
+    let listener = TcpListener::bind(&address.parse().unwrap()).unwrap();
+
+    let poll = Poll::new().unwrap();
+    poll.register(
+        &listener,
+        Token(0),
+        Ready::readable(),
+        PollOpt::edge()).unwrap();
+
+    let mut counter: usize = 0;
+    let mut sockets: HashMap<Token, TcpStream> = HashMap::new();
+    let mut requests: HashMap<Token, Vec<u8>> = HashMap::new();
+    let mut buffer = [0 as u8; 1024];
+
+    let mut events = Events::with_capacity(1024);
+    loop {
+        //poll阻塞当前线程。
+        poll.poll(&mut events, None).unwrap();
+        for event in &events {
+            match event.token() {
+                Token(0) => {
+                    loop {
+                        match listener.accept() {
+                            Ok((socket, _)) => {
+                                counter += 1;
+                                let token = Token(counter);
+
+                                //将accept出来的socket注册监听其可读事件。
+                                //每个socket赋予一个身份证号token.
+                                poll.register(
+                                    &socket,
+                                    token,
+                                Ready::readable(),
+                                PollOpt::edge()).unwrap();
+
+                                sockets.insert(token, socket);
+                                requests.insert(token, Vec::with_capacity(192));
+                            },
+                            Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock =>
+                                break,
+                            Err(_) => break
+                        }
+                    }
+                },
+                token if event.readiness().is_readable() => {
+                    loop {
+                        let read = sockets.get_mut(&token).unwrap().read(&mut buffer);
+                        match read {
+                            Ok(0) => {
+                                sockets.remove(&token);
+                                break
+                            },
+                            Ok(n) => {
+                                let req = requests.get_mut(&token).unwrap();
+                                for b in &buffer[0..n] {
+                                    req.push(*b);
+                                }
+                            },
+                            Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock =>
+                                break,
+                            Err(_) => break
+                        }
+                    }
+					
+                    //start 从start到end这块代码逻辑，用于决定是否注册监听此socket的可写事件。
+                    //说白了，业务逻辑按双方约定的protocol交谈， 此处server判断是否向client回话。
+                    let ready = requests.get(&token).unwrap()
+                        .windows(4)
+                        .find(|window| is_double_crnl(*window))
+                        .is_some();
+
+                    if ready {
+                        let socket = sockets.get(&token).unwrap();
+                        //注意此socket在accept的时候已经被注册到poll, 所以此处需再注册。
+                        //注意之前通过poll.register注册的信息会被poll.reregister再注册的信息取代。
+                        //说白了，以poll.reregister为准。
+                        poll.reregister(
+                            socket,
+                            token,
+                            Ready::writable(),
+                            PollOpt::edge() | PollOpt::oneshot()).unwrap();
+                        //注意此处PollOpt::oneshot() 表示，就监听一次可写事件，一次性的！
+                        //事件发生后，注册的信息还保留在mio::poll中， 但是不起作用了。
+                    }
+                    //end
+                },
+                token if event.readiness().is_writable() => {
+                    requests.get_mut(&token).unwrap().clear();
+                    sockets.get_mut(&token).unwrap().write_all(RESPONSE.as_bytes()).unwrap();
+
+                    //终于此socket的可写事件到来了， 向客户端写完response后， 重新再注册监听此socket的可读事件。
+                    //为什么需要重新注册呢？ 因为上面poll.reregister时指定了PollOpt::oneshot()参数， 所以可写事件到来之后，
+                    //之前的注册监听就失效了，所以需要reregister; 更何况此时笔者想去监听可读事件。
+                    // Re-use existing connection ("keep-alive") - switch back to reading
+                    poll.reregister(
+                        sockets.get(&token).unwrap(),
+                        token,
+                        Ready::readable(),
+                        PollOpt::edge()).unwrap();
+                },
+                _ => unreachable!()
+            }
+        }
+    }
+}
+/*笔者非要这么麻烦，每此以PollOpt::oneshot()方式注册监听client socket的可写事件吗？ 以edge或level方式一次性注册监听此client socket 的可写可读事件多好！也是呢！我的理解笔者可能想根据client发来的信息，是否满足条件， 然后再决定是否写response给client ；如果条件不满足，干脆也不会向poll注册，节省一些性能；如果不管这么多，可读可写都注册监听上， 然后在可写事件到来时，再判断是否满足条件写response给client，若不满足， 则poll做了无用功，浪费性能。
+
+听起来好麻烦， 好绕口！因为你置身在mio eventloop中， 交由eventloop去驱动你的逻辑执行。你也可以采用其他方式，
+比如，我只让poll监听client socket的可读事件， 你读取了client message之后，交给单独的线程、线程池、闭包、协成、future之类的独立执行单元去处理。还有一个问题，所有的client socket都交给主线程中的poll监听，当socket量大时，性能是否会下降！是否可以再开几个线程分别运行各自的poll, 然后把client socket分给它们分别监听处理？通过channel彼此互通。可行吗？ 需要再深入研究一下mio。
+
+*/
+
+```
+
+> mio实现的是一个单线程事件循环，并没有实现线程池及多线程事件循环，如果需要线程池及多线程事件循环等需要自己实现。
+
+
+
 * Reference
 
   `https://docs.rs/mio/0.6.21/mio/index.html`
-
+  
+  `https://github.com/sergey-melnychuk/mio-tcp-server`
+  
+  `https://sergey-melnychuk.github.io/2019/08/01/rust-mio-tcp-server/`
