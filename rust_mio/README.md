@@ -775,7 +775,7 @@ pub enum ErrorKind {
 
 * 如何准确判定peer socket已经关闭？
 
-上面的例子中，只是检测read的OK(0) ,就认为对端socket关闭了，可信吗？
+上面的例子中，只是检测read的OK(0) ,就认为对端socket关闭了，可信吗？mio poll可以检测到peer socket已经关闭了吗？对于远端直接断电或拔网线，导致链路不同，mio poll可以检测到吗？ 换句话说mio poll对于可写可读的判断条件是什么？
 
 
 
