@@ -108,67 +108,67 @@ fn main() {
 >
 > * PollOpt::edge()) ； PollOpt::level()； PollOpt::oneshot(); 代表事件的派发方式，需要详细分析：
 >
->   比如你poll后发现soket data 可读了，大小2kb, 你开始读取，只读取了1kg，不再读了， 也就是说socket buffer中还剩1kg data ,  此时你再次poll, 若是 PollOpt::level()， 则还是通知你soket data可读； 若是PollOpt::edge()) ，则不再通知你有数据可读了。
+> 比如你poll后发现soket data 可读了，大小2kb, 你开始读取，只读取了1kg，不再读了， 也就是说socket buffer中还剩1kg data ,  此时你再次poll, 若是 PollOpt::level()， 则还是通知你soket data可读； 若是PollOpt::edge()) ，则不再通知你有数据可读了。
 >
->   学过数字电子的可能了解，画过波形图，水平沿，上升沿；水平沿代表事件持续状态， 上升沿代表事件的转变；PollOpt::level()好比水平沿，只要事件没有转变，就会持续通知你此事件的存在！PollOpt::edge()好比上升沿，新旧事件交替，只通知你一次新事件出现，所以必须一次性把data读尽了，即直到read的时候返回WouldBlock， 表示数据读尽了，再读就要阻塞了。
+> 学过数字电子的可能了解，画过波形图，水平沿，上升沿；水平沿代表事件持续状态， 上升沿代表事件的转变；PollOpt::level()好比水平沿，只要事件没有转变，就会持续通知你此事件的存在！PollOpt::edge()好比上升沿，新旧事件交替，只通知你一次新事件出现，所以必须一次性把data读尽了，即直到read的时候返回WouldBlock， 表示数据读尽了，再读就要阻塞了。
 >
->   
+> 
 >
->   PollOpt::oneshot() tells `Poll` to disable events for the socket after returning an event. so call poll again then to block . 要想重新监听此socket上的事件， 需要the socket would need to be reregistered using [`reregister`](https://docs.rs/mio/0.6.21/mio/struct.Poll.html#method.reregister).
+> PollOpt::oneshot() tells `Poll` to disable events for the socket after returning an event. so call poll again then to block . 要想重新监听此socket上的事件， 需要the socket would need to be reregistered using [`reregister`](https://docs.rs/mio/0.6.21/mio/struct.Poll.html#method.reregister).
 >
->   ```rust
->   use mio::{Poll, Ready, PollOpt, Token};
->   use mio::net::TcpStream;
->   
->   let poll = Poll::new()?;
->   let socket = TcpStream::connect(&"216.58.193.100:80".parse()?)?;
->   
->   // Register the socket with `poll`, requesting readable
->   poll.register(&socket, Token(0), Ready::readable(), PollOpt::edge())?;
->   
->   // Reregister the socket specifying a different token and write interest
->   // instead. `PollOpt::edge()` must be specified even though that value
->   // is not being changed.
->   poll.reregister(&socket, Token(2), Ready::writable(), PollOpt::edge())?;
->   ```
+> ```rust
+> use mio::{Poll, Ready, PollOpt, Token};
+> use mio::net::TcpStream;
+> 
+> let poll = Poll::new()?;
+> let socket = TcpStream::connect(&"216.58.193.100:80".parse()?)?;
+> 
+> // Register the socket with `poll`, requesting readable
+> poll.register(&socket, Token(0), Ready::readable(), PollOpt::edge())?;
+> 
+> // Reregister the socket specifying a different token and write interest
+> // instead. `PollOpt::edge()` must be specified even though that value
+> // is not being changed.
+> poll.reregister(&socket, Token(2), Ready::writable(), PollOpt::edge())?;
+> ```
 >
->   
+> 
 >
->   ---
+> ---
 >
->   pub fn [poll](https://docs.rs/mio/0.6.21/mio/struct.Poll.html#method.poll)(
->     &self,
->     events: &mut [Events](https://docs.rs/mio/0.6.21/mio/struct.Events.html),
->     timeout: [Option](https://doc.rust-lang.org/nightly/core/option/enum.Option.html)<[Duration](https://doc.rust-lang.org/nightly/core/time/struct.Duration.html)>
->   ) -> [Result](https://doc.rust-lang.org/nightly/std/io/error/type.Result.html)<[usize](https://doc.rust-lang.org/nightly/std/primitive.usize.html)>
+> pub fn [poll](https://docs.rs/mio/0.6.21/mio/struct.Poll.html#method.poll)(
+>  &self,
+>  events: &mut [Events](https://docs.rs/mio/0.6.21/mio/struct.Events.html),
+>  timeout: [Option](https://doc.rust-lang.org/nightly/core/option/enum.Option.html)<[Duration](https://doc.rust-lang.org/nightly/core/time/struct.Duration.html)>
+> ) -> [Result](https://doc.rust-lang.org/nightly/std/io/error/type.Result.html)<[usize](https://doc.rust-lang.org/nightly/std/primitive.usize.html)>
 >
->   Wait for readiness events
+> Wait for readiness events
 >
->   Blocks the current thread and waits for readiness events for any of the `Evented` handles that have been registered with this `Poll` instance. The function will block until either at least one readiness event has been received or `timeout` has elapsed. A `timeout` of `None` means that `poll` will block until a readiness event has been received.
+> Blocks the current thread and waits for readiness events for any of the `Evented` handles that have been registered with this `Poll` instance. The function will block until either at least one readiness event has been received or `timeout` has elapsed. A `timeout` of `None` means that `poll` will block until a readiness event has been received.
 >
->   ```rust
->   use mio::{Poll, Events};
->   use std::time::Duration;
->   
->   let poll = match Poll::new() {
->       Ok(poll) => poll,
->       Err(e) => panic!("failed to create Poll instance; err={:?}", e),
->   };
->   
->   // Create a structure to receive polled events
->   let mut events = Events::with_capacity(1024);
->   
->   // Wait for events, but none will be received because no `Evented`
->   // handles have been registered with this `Poll` instance.
->   let n = poll.poll(&mut events, Some(Duration::from_millis(500)))?;
->   assert_eq!(n, 0);
->   ```
+> ```rust
+> use mio::{Poll, Events};
+> use std::time::Duration;
+> 
+> let poll = match Poll::new() {
+>    Ok(poll) => poll,
+>    Err(e) => panic!("failed to create Poll instance; err={:?}", e),
+> };
+> 
+> // Create a structure to receive polled events
+> let mut events = Events::with_capacity(1024);
+> 
+> // Wait for events, but none will be received because no `Evented`
+> // handles have been registered with this `Poll` instance.
+> let n = poll.poll(&mut events, Some(Duration::from_millis(500)))?;
+> assert_eq!(n, 0);
+> ```
 >
 > ---
 >
 > * Token的生成和用法例子
 >
->  Tokent is usize, which is a unsigned integer type,大小由OS Target决定，32bitOS usize is 4 byte, 64bitOS is 8byte. 
+> Tokent is usize, which is a unsigned integer type,大小由OS Target决定，32bitOS usize is 4 byte, 64bitOS is 8byte. 
 >
 > ```rust
 > use mio::{Events, Ready, Poll, PollOpt, Token};
@@ -199,20 +199,20 @@ fn main() {
 > 
 > // Register the listener
 > poll.register(&listener,
->               LISTENER,
->               Ready::readable(),
->               PollOpt::edge())?;
+>            LISTENER,
+>            Ready::readable(),
+>            PollOpt::edge())?;
 > 
 > // Spawn a thread that will connect a bunch of sockets then close them
 > let addr = listener.local_addr()?;
 > thread::spawn(move || {
->     use std::net::TcpStream;
+>  use std::net::TcpStream;
 > 
->     // +1 here is to connect an extra socket to signal the socket to close
->     for _ in 0..(MAX_SOCKETS+1) {
->         // Connect then drop the socket
->         let _ = TcpStream::connect(&addr).unwrap();
->     }
+>  // +1 here is to connect an extra socket to signal the socket to close
+>  for _ in 0..(MAX_SOCKETS+1) {
+>      // Connect then drop the socket
+>      let _ = TcpStream::connect(&addr).unwrap();
+>  }
 > });
 > 
 > // Event storage
@@ -223,70 +223,76 @@ fn main() {
 > 
 > // The main event loop
 > loop {
->     // Wait for events
->     poll.poll(&mut events, None)?;
+>  // Wait for events
+>  poll.poll(&mut events, None)?;
 > 
->     for event in &events {
->         match event.token() {
->             LISTENER => {
->                 // Perform operations in a loop until `WouldBlock` is
->                 // encountered.
->                 loop {
->                     match listener.accept() {
->                         Ok((socket, _)) => {
->                             // Shutdown the server
->                             if next_socket_index == MAX_SOCKETS {
->                                 return Ok(());
->                             }
+>  for event in &events {
+>      match event.token() {
+>          LISTENER => {
+>              // Perform operations in a loop until `WouldBlock` is
+>              // encountered.
+>              loop {
+>                  match listener.accept() {
+>                      Ok((socket, _)) => {
+>                          // Shutdown the server
+>                          if next_socket_index == MAX_SOCKETS {
+>                              return Ok(());
+>                          }
 > 
->                             // Get the token for the socket
->                             let token = Token(next_socket_index);
->                             next_socket_index += 1;
+>                          // Get the token for the socket
+>                          let token = Token(next_socket_index);
+>                          next_socket_index += 1;
 > 
->                             // Register the new socket w/ poll
->                             poll.register(&socket,
->                                          token,
->                                          Ready::readable(),
->                                          PollOpt::edge())?;
+>                          // Register the new socket w/ poll
+>                          poll.register(&socket,
+>                                       token,
+>                                       Ready::readable(),
+>                                       PollOpt::edge())?;
 > 
->                             // Store the socket
->                             sockets.insert(token, socket);
->                         }
->                         Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
->                             // Socket is not ready anymore, stop accepting
->                             break;
->                         }
->                         e => panic!("err={:?}", e), // Unexpected error
->                     }
->                 }
->             }
->             token => {
->                 // Always operate in a loop
->                 loop {
->                     match sockets.get_mut(&token).unwrap().read(&mut buf) {
->                         Ok(0) => {
->                             // Socket is closed, remove it from the map
->                             sockets.remove(&token);
->                             break;
->                         }
->                         // Data is not actually sent in this example
->                         Ok(_) => unreachable!(),
->                         Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
->                             // Socket is not ready anymore, stop reading
->                             break;
->                         }
->                         e => panic!("err={:?}", e), // Unexpected error
->                     }
->                 }
->             }
->         }
->     }
+>                          // Store the socket
+>                          sockets.insert(token, socket);
+>                      }
+>                      Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+>                          // Socket is not ready anymore, stop accepting
+>                          //必须单独处理这个错误类型，其代表socket还没有准备好，可能在未来某个时间准备好，
+>                          //所以我们不必惊慌失措，就当没发生，接着loop就好。
+>                          break;
+>                      }
+>                      //遇到错误就panic，实在不可接受，需要加入逻辑分析不同错误种类，只有不可恢复的error才需要panic.
+>                      e => panic!("err={:?}", e), // Unexpected error
+>                  }
+>              }
+>          }
+>          token => {
+>              // Always operate in a loop
+>              loop {
+>                  match sockets.get_mut(&token).unwrap().read(&mut buf) {
+>                      Ok(0) => {
+>                          // Socket is closed, remove it from the map
+>                          sockets.remove(&token);
+>                          break;
+>                      }
+>                      // Data is not actually sent in this example
+>                      Ok(_) => unreachable!(),
+>                      Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+>                          // Socket is not ready anymore, stop reading
+>                          //不断 read data in loop直至data被读尽了，然后再次read data是就会出发这个WouldBlock错误种类，
+>                          //意思说：没有data可读了。
+>                          break;
+>                      }
+>                      e => panic!("err={:?}", e), // Unexpected error
+>                  }
+>              }
+>          }
+>      }
+>  }
 > }
+> /*If operation fails with WouldBlock, then the caller should not treat this as an error, but instead should wait until another readiness event is received.*/
 > ```
 >
 > ```bash
->  cat /proc/sys/fs/file-max 
->  more /proc/sys/fs/file-nr
+> cat /proc/sys/fs/file-max 
+> more /proc/sys/fs/file-nr
 > ```
 
 **file-max** is the maximum File Descriptors (FD). It is a kernel setting enforced at the system level. **ulimit** is enforced at the user level. It should be configured to be less than file-max.
@@ -668,6 +674,7 @@ fn main() {
                         let read = sockets.get_mut(&token).unwrap().read(&mut buffer);
                         match read {
                             Ok(0) => {
+                                /*Read is performed in the loop until known WouldBlock error is returned. Each call to read returns (if successful) actual number of bytes read, and when there are zero bytes read - this means client has disconnected already, and there is no point if keeping the socket around (nor continuing the reading loop).*/
                                 sockets.remove(&token);
                                 break
                             },
@@ -734,6 +741,41 @@ fn main() {
 ```
 
 > mio实现的是一个单线程事件循环，并没有实现线程池及多线程事件循环，如果需要线程池及多线程事件循环等需要自己实现。
+
+
+
+* std::io::ErrorKind
+
+> 上面例子中的read /write操作都属于io操作， 都返回Result<usize, Error>, Error is a struct in io module.
+>
+> 所以一旦出错，可由针对性处理，而不是简单的panic. 再次强调程序未按预期执行，请好好读一读：`https://docs.rs/mio/0.6.21/mio/struct.Poll.html#portability`
+
+```rust
+pub enum ErrorKind {
+    NotFound,
+    PermissionDenied,
+    ConnectionRefused,
+    ConnectionReset,
+    ConnectionAborted,
+    NotConnected,
+    AddrInUse,
+    AddrNotAvailable,
+    BrokenPipe,
+    AlreadyExists,
+    WouldBlock,
+    InvalidInput,
+    InvalidData,
+    TimedOut,
+    WriteZero,
+    Interrupted,
+    Other,
+    UnexpectedEof,
+}
+```
+
+* 如何准确判定peer socket已经关闭？
+
+上面的例子中，只是检测read的OK(0) ,就认为对端socket关闭了，可信吗？
 
 
 
