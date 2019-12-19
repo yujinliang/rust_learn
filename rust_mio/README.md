@@ -1,4 +1,4 @@
-# Rust MIO 学习杂记
+# Rust MIO 0.6v 学习杂记
 
 * 以MIO官方文档为主线
 
@@ -775,7 +775,35 @@ pub enum ErrorKind {
 
 * 如何准确判定peer socket已经关闭？
 
-上面的例子中，只是检测read的OK(0) ,就认为对端socket关闭了，可信吗？mio poll可以检测到peer socket已经关闭了吗？对于远端直接断电或拔网线，导致链路不同，mio poll可以检测到吗？ 换句话说mio poll对于可写可读的判断条件是什么？
+上面官方的例子中，只要检测read的OK(0) ,就认为对端socket关闭了。
+
+linux scoket 、 epoll、 mio等都是以tcp/ip为基础的！tcp/ip不是询问型协议，所以不能及时感知对端失效了，即使引用SO_KEEPALIVE SOCKET参数，也是2小时后才发送探测包，也就是说不能及时探知！tcp/ip之所以这样设计就是考虑到性能和带宽的问题！这可不是量子相干性，两个量子不管相隔多远，一个改变，另一个立即相应改变！我不是物理学家，粗浅理解如此！但现实中的问题是：网络中两个端点确定对方安好的方式唯有`询问`，不断询问，询问的频率越高越及时准确！但是代价高昂，就是严重浪费带宽！有得有失，看你的目标吧！所以说tcp/ip是可靠的， 但不是绝对可靠的！
+
+所以一般这样做，(1)对于read, write之类操作结果要分析判断. (2) 加入timeout机制，特别是read/write等阻塞型api. (3) ignore signal SIGPIPE,check EPIPE result.  (4) 若调用了select/epoll之类，注意分析判断其给出的error   如: EPOLLRDHUP、EPOLLERR、EPOLLHUP (5) 加入心跳机制. 
+
+---
+
+我的理解，对于采用epoll之类的io复用，必须配合上非阻塞api, read/write等， 很显然呀，你不能读或写完某一个socket event后就block在那里了， 其他socket event怎么处理呀！当然单开个线程或采用异步IO也可以，总之不能block。
+
+---
+
+mio 4个需要特别注意点：
+
+(1) With edge-triggered events, operations **must** be performed on the `Evented` type until [`WouldBlock`](https://doc.rust-lang.org/std/io/enum.ErrorKind.html#variant.WouldBlock) is returned. edge模式时， 数据必须读尽，即不断read直到返回WouldBlock。
+
+(2) Since even with edge-triggered events, multiple events can be generated upon receipt of multiple chunks of data, the caller has the option to set the [`oneshot`](https://docs.rs/mio/0.6.10/mio/struct.PollOpt.html#method.oneshot) flag.  将oneshot 与edge或level一起使用，可以避免饥饿问题；disable event 派发过来，不是丢弃，只是积压，处理完当前event后， 可以reregister此socket，从而允许后续事件派发。
+
+(3) [`Poll::poll`](https://docs.rs/mio/0.6.10/mio/struct.Poll.html#method.poll) may return readiness events even if the associated [`Evented`](https://docs.rs/mio/0.6.10/mio/event/trait.Evented.html) handle is not actually ready. 
+
+(4) The only readiness operations that are guaranteed to be present on all supported platforms are [`readable`](https://docs.rs/mio/0.6.10/mio/struct.Ready.html#method.readable) and [`writable`](https://docs.rs/mio/0.6.10/mio/struct.Ready.html#method.writable).
+
+---
+
+level : write event 不断产生；edge: read event 不断产生；两者都会产生饥饿问题， 可以配合上oneshot参数和reregister，可有效避免产生饥饿问题。也可通过其他方式解决饥饿问题，如： 可以不现场处理，而只是将其打入队列中， 由独立的执行单元consume。 或者以闭包方式处理， 并将此闭包交给threadpool之类独立执行。还可以采用future方式， 交由独立executor执行。
+
+---
+
+
 
 
 
