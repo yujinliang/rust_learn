@@ -99,6 +99,16 @@
 
 `都是自己的理解，难免谬误，尽请指教，谢谢`
 
+* About me
+
+> 作者：心尘了
+
+> email: [285779289@qq.com](mailto:285779289@qq.com)
+
+> 微信：13718438106
+
+
+
 * Reference
 
 1. `https://www.jianshu.com/p/0d60c148c0c0`

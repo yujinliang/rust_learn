@@ -707,8 +707,8 @@ fn main() {
                             token,
                             Ready::writable(),
                             PollOpt::edge() | PollOpt::oneshot()).unwrap();
-                        //注意此处PollOpt::oneshot() 表示，就监听一次可写事件，一次性的！
-                        //事件发生后，注册的信息还保留在mio::poll中， 但是不起作用了。
+                        //注意此处PollOpt::oneshot() 表示，就派发一次可写事件，
+                        //事件发生后，注册的信息还保留在mio::poll中， 继续监听排队事件，但是不再派发了。
                     }
                     //end
                 },
@@ -718,7 +718,7 @@ fn main() {
 
                     //终于此socket的可写事件到来了， 向客户端写完response后， 重新再注册监听此socket的可读事件。
                     //为什么需要重新注册呢？ 因为上面poll.reregister时指定了PollOpt::oneshot()参数， 所以可写事件到来之后，
-                    //之前的注册监听就失效了，所以需要reregister; 更何况此时笔者想去监听可读事件。
+                    //之前的注册就被disable了， 不再派发事件，除非重新通过一下方式enable 事件派发。
                     // Re-use existing connection ("keep-alive") - switch back to reading
                     poll.reregister(
                         sockets.get(&token).unwrap(),
@@ -775,7 +775,7 @@ pub enum ErrorKind {
 
 * 如何准确判定peer socket已经关闭？
 
-上面官方的例子中，只要检测read的OK(0) ,就认为对端socket关闭了。
+上面官方的例子中，只要检测到read的OK(0) ,就认为对端socket关闭了。
 
 linux scoket 、 epoll、 mio等都是以tcp/ip为基础的！tcp/ip不是询问型协议，所以不能及时感知对端失效了，即使引用SO_KEEPALIVE SOCKET参数，也是2小时后才发送探测包，也就是说不能及时探知！tcp/ip之所以这样设计就是考虑到性能和带宽的问题！这可不是量子相干性，两个量子不管相隔多远，一个改变，另一个立即相应改变！我不是物理学家，粗浅理解如此！但现实中的问题是：网络中两个端点确定对方安好的方式唯有`询问`，不断询问，询问的频率越高越及时准确！但是代价高昂，就是严重浪费带宽！有得有失，看你的目标吧！所以说tcp/ip是可靠的， 但不是绝对可靠的！
 
@@ -795,7 +795,9 @@ mio 4个需要特别注意点：
 
 (3) [`Poll::poll`](https://docs.rs/mio/0.6.10/mio/struct.Poll.html#method.poll) may return readiness events even if the associated [`Evented`](https://docs.rs/mio/0.6.10/mio/event/trait.Evented.html) handle is not actually ready. 
 
-(4) The only readiness operations that are guaranteed to be present on all supported platforms are [`readable`](https://docs.rs/mio/0.6.10/mio/struct.Ready.html#method.readable) and [`writable`](https://docs.rs/mio/0.6.10/mio/struct.Ready.html#method.writable).
+​	If operation fails with [`WouldBlock`](https://doc.rust-lang.org/std/io/enum.ErrorKind.html#variant.WouldBlock), then the caller should not treat this as an error and wait until another 	readiness event is received.  //意思： poll可能会谎报军情，所以你的IO操作返回WouldBlock时，不是错误，忽略就好。
+
+(4) The only readiness operations that are guaranteed to be present on all supported platforms are [`readable`](https://docs.rs/mio/0.6.10/mio/struct.Ready.html#method.readable) and [`writable`](https://docs.rs/mio/0.6.10/mio/struct.Ready.html#method.writable). 考虑到跨平台问题， mio只保证可读可写两事件在所有平台都支持。
 
 ---
 
@@ -803,7 +805,21 @@ level : write event 不断产生；edge: read event 不断产生；两者都会�
 
 ---
 
+我的理解：oneshot 模式， 只是disable event poll, 事件积压在那，先别派发， 可不是discard哟， 一旦你reregister 重新enable event poll后， 后续事件继续正常派发。而poll.deregister(&socket).unwrap(); 是真正取消监听注册。
 
+---
+
+【学习笔记，不严谨， 疏于考证，难免谬误，欢迎指正】
+
+
+
+* About me
+
+> 作者：心尘了
+
+> email: [285779289@qq.com](mailto:285779289@qq.com)
+
+> 微信：13718438106
 
 
 
