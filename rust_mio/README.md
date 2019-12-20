@@ -708,7 +708,7 @@ fn main() {
                             Ready::writable(),
                             PollOpt::edge() | PollOpt::oneshot()).unwrap();
                         //注意此处PollOpt::oneshot() 表示，就派发一次可写事件，
-                        //事件发生后，注册的信息还保留在mio::poll中， 继续监听排队事件，但是不再派发了。
+                        //事件派发后，注册的信息还保留在mio::poll中， 处于disable状态。
                     }
                     //end
                 },
@@ -718,7 +718,7 @@ fn main() {
 
                     //终于此socket的可写事件到来了， 向客户端写完response后， 重新再注册监听此socket的可读事件。
                     //为什么需要重新注册呢？ 因为上面poll.reregister时指定了PollOpt::oneshot()参数， 所以可写事件到来之后，
-                    //之前的注册就被disable了， 不再派发事件，除非重新通过一下方式enable 事件派发。
+                    //之前的注册的就被disable了， 不再派发事件，除非重新通过reregister方式enable 事件派发。
                     // Re-use existing connection ("keep-alive") - switch back to reading
                     poll.reregister(
                         sockets.get(&token).unwrap(),
@@ -805,7 +805,62 @@ level : write event 不断产生；edge: read event 不断产生；两者都会�
 
 ---
 
-我的理解：oneshot 模式， 只是disable event poll, 事件积压在那，先别派发， 可不是discard哟， 一旦你reregister 重新enable event poll后， 后续事件继续正常派发。而poll.deregister(&socket).unwrap(); 是真正取消监听注册。
+我的理解：oneshot 模式触发后会disable 此socket事件的poll, 我实际测试过， 写个client不断向server send data,  当oneshot触发后， thread::sleep几分钟， 然后再reregister,  此期间client仍然不断send data, 但是过一会就block在那， 不再send data to server了， 直到server wake up 后执行reregister， 此刻server poll会派发一个此peer socket的可读事件， 然后server side 读取client data后， 再次sleep,  而client又恢复了发送数据，一会儿又block了， 如此反复。 我猜测client不断向server发送数据直到server端此peer socket data buffer满了，所以tcp协调停止client的发送，但是双方的链接是保持的。【精力有限，测试不太严谨，希望抛砖引玉】
+
+`测试代码在：/rust_learn/rust_mio/mio_oneshot_test/`
+
+---
+
+同步阻塞： 等待数据到达， 数据到达后将其从kernel space copy to user space。
+
+同步非阻塞： 查询数据是否到达，若否则立刻返回， 若是则将数据从kernel space copy to user space。
+
+异步：客户说：我要数据，系统说：您别担心，先忙点别的，数据到了我送到你家里。
+
+POSIX(可移植操作系统接口)把同步IO操作定义为导致进程阻塞直到IO完成的操作，反之则是异步IO
+
+---
+
+mio::poll 帮你等待数据， 而你需要copy data from kernel space to user space.
+
+---
+
+IO分两阶段：
+
+```
+1.数据等待阶段
+2.内核空间复制回用户进程缓冲区阶段
+```
+
+一般来讲：阻塞IO模型、非阻塞IO模型、IO复用模型(select/poll/epoll)、信号驱动IO模型都属于同步IO，因为阶段2是阻塞的(尽管时间很短)。只有异步IO模型是符合POSIX异步IO操作含义的，不管在阶段1还是阶段2都可以干别的事。
+
+---
+
+【Unix网络编程 卷1 中几张经典的图】
+
+![](/home/yjl/study_proj/rust_learn/rust_mio/1.png)
+
+---
+
+![](/home/yjl/study_proj/rust_learn/rust_mio/2.png)
+
+---
+
+![](/home/yjl/study_proj/rust_learn/rust_mio/3.png)
+
+---
+
+![](/home/yjl/study_proj/rust_learn/rust_mio/4.png)
+
+---
+
+![](/home/yjl/study_proj/rust_learn/rust_mio/5.png)
+
+---
+
+
+
+poll.deregister(&socket).unwrap(); 是真正取消监听注册。
 
 ---
 
@@ -830,3 +885,7 @@ level : write event 不断产生；edge: read event 不断产生；两者都会�
   `https://github.com/sergey-melnychuk/mio-tcp-server`
   
   `https://sergey-melnychuk.github.io/2019/08/01/rust-mio-tcp-server/`
+  
+  `https://www.cnblogs.com/euphie/p/6376508.html`
+  
+  `UNIX网络编程卷1`
