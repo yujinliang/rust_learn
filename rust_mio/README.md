@@ -838,23 +838,23 @@ IO分两阶段：
 
 【Unix网络编程 卷1 中几张经典的图】
 
-![](/home/yjl/study_proj/rust_learn/rust_mio/1.png)
+![](https://github.com/yujinliang/rust_learn/blob/master/rust_mio/1.png)
 
 ---
 
-![](/home/yjl/study_proj/rust_learn/rust_mio/2.png)
+![](https://github.com/yujinliang/rust_learn/blob/master/rust_mio/2.png)
 
 ---
 
-![](/home/yjl/study_proj/rust_learn/rust_mio/3.png)
+![](https://github.com/yujinliang/rust_learn/blob/master/rust_mio/3.png)
 
 ---
 
-![](/home/yjl/study_proj/rust_learn/rust_mio/4.png)
+![](https://github.com/yujinliang/rust_learn/blob/master/rust_mio/4.png)
 
 ---
 
-![](/home/yjl/study_proj/rust_learn/rust_mio/5.png)
+![](https://github.com/yujinliang/rust_learn/blob/master/rust_mio/5.png)
 
 ---
 
@@ -888,4 +888,4 @@ poll.deregister(&socket).unwrap(); 是真正取消监听注册。
   
   `https://www.cnblogs.com/euphie/p/6376508.html`
   
-  `UNIX网络编程卷1`
+  `UNIX网络编程 卷1, (美)W. Richard Stevens著作`
