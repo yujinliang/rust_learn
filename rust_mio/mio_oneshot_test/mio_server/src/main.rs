@@ -26,7 +26,7 @@ fn main() {
     let mut counter: usize = 0;
     let mut sockets: HashMap<Token, TcpStream> = HashMap::new();
     let mut requests: HashMap<Token, Vec<u8>> = HashMap::new();
-    let mut buffer = [0 as u8; 1024];
+    let mut buffer = [0 as u8; 1];
 
 
     let mut events = Events::with_capacity(1024);
@@ -78,7 +78,10 @@ fn main() {
                             Err(_) => break
                         }
                     }
-                        println!("read got");
+                        //for test.
+                        let req = requests.get_mut(&token).unwrap();
+                        println!("{:?}", req);
+                        //------
                         let socket = sockets.get(&token).unwrap();
                         poll.reregister(
                             socket,
