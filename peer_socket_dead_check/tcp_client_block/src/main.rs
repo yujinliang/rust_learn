@@ -20,7 +20,7 @@ loop {
             Ok(n) => {
                 println!("read, n: {}, server back {:?}" ,n, String::from_utf8_lossy(&buf));
                 //read return with Ok(0) that means peer socket is dead in common case.
-                //of course, we also  check  both Ok(0) and  Error::last_os_error().ErrorKind .
+                //of course, we also  check  both Ok(0) and  Error::last_os_error().ErrorKind , such as: ErrorKind::NotConnected.
                 //to avoid false alarm.
                 if n == 0 {
                     stream.shutdown(Shutdown::Both).unwrap_or_default();
