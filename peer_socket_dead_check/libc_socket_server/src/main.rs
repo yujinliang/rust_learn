@@ -44,7 +44,7 @@ fn main()  {
             crossbeam::scope(|s| {
                 s.spawn(move |_| {
 
-                    let mut buf = [1u8; 8];
+                    let mut buf = [1u8; 20];
                     loop {
 
                         let n = libc::read(peer_socket, &mut buf as *mut _ as *mut c_void, buf.len());
