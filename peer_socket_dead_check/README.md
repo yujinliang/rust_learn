@@ -14,7 +14,7 @@
 
 * 一般性总结
 
-> 不论`linux socket/epoll/select/poll`亦或Rust网络库， 对于read操作的返回值n， 0 代表对端关闭， 小于零代表出错， 具体什么错误需结合`linux errno`判断，比如中断则忽略！ 对于Rust的`Ok(0)`代表对端关闭， Err(e)代表出错，一般`crate libc` 才可能返回`Ok(-1)`代表底层出错，需要结合`std::io::Error::last_os_error().kind()`来决定错误具体应对， 通常只要检测`Err(e) && e.kind()`即可， 具体的错误代码都定义在`std::io::ErrorKind`中， 里面明确定义几个`Error Case`代表网络不通，一看便知，如：`ConnectionReset/ConnectionAborted/NotConnected/ConnectionRefused`等,  其中`Interrupted` 代表中断发生， 我们可以重启read操作！`TimedOut`代表超时，意味着我们是否需要主动发送心跳包！`WouldBlock`主要针对`非阻塞API`，用于提示我们数据已经读尽，若再调用read则可能block,特别是`linux epoll edge and mio edge `模式，需要不断循环read直到返回``WouldBlock``代表排干数据，从而避免数据丢失。
+> 不论`linux socket/epoll/select/poll`亦或Rust网络库， 对于read操作的返回值n， 0 代表对端关闭， 小于零代表出错， 具体什么错误需结合`linux errno`判断，比如中断则忽略！ 对于Rust的`Ok(0)`代表对端关闭， Err(e)代表出错，一般`crate libc` 才可能返回`Ok(-1)`代表底层出错，需要结合`std::io::Error::last_os_error().kind()`来决定错误具体应对， 通常只要检测`Err(e) && e.kind()`即可， 具体的错误代码都定义在`std::io::ErrorKind`中， 里面明确定义几个`Error Case`代表网络不通，一看便知，如：`ConnectionReset/ConnectionAborted/NotConnected/ConnectionRefused`等,  其中`Interrupted (EINTR)` 代表中断发生， 我们可以重启read操作！`TimedOut`代表超时，意味着我们是否需要主动发送心跳包！`WouldBlock`主要针对`非阻塞API`，用于提示我们数据已经读尽，若再调用read则可能block,特别是`linux epoll edge and mio edge `模式，需要不断循环read直到返回``WouldBlock``代表排干数据，从而避免数据丢失。
 >
 > ---
 >
@@ -119,6 +119,63 @@
 >
 > 结论是：如果你需要及时获知对端生死， 请自己发送心跳包并等待对端反馈！主动发包意味着要`TCP/IP`为你的包包找路， 有路则对端就活着，没路（包括对端端口进程死了）的话，就是对端死了！当然`TCP/IP`协议本身也不能立刻就断定对端死了， 它也会重试多次之后才会认定！所以也是有一定延迟的！看来还是量子纠缠态比较理想呀！
 
+---
+
+
+
+* TIME_WAIT状态 和 `SO_REUSEADDR`选项
+
+TCP主动关闭一方，将会进入TIME_WAIT，这个状态需要维持`2MSL`时间才会断开。`MSL`叫最大段生命周期，也就是一个TCP段在网络存活的最大时间。RFC 1122建议是2分钟，但BSD sockets的实现把`MSL`设定为30秒。`2MSL`也就是60秒。为什么主动关闭一方需要维持`2MSL`再关闭呢：
+
+1. 实现可靠的中断：被动方(server)发送FIN后，主动方(client)回应`ACK`，如果这个`ACK`丢了，被动方还会重新发送FIN，TIME_WAIT状态就是预留足够的时间应对中断时的丢包重传。
+2. 避免新的连接接受网络中旧的重复包：TCP由于重传机制，可能会产生重复包，且这些包可能会在连接断开后才到达；如果刚好有一个新的连接使用同样的`IP/port`，这些重复包就会传给新的连接，TCP必须避免这种情况发生，它的处理方法是如果TCP端处于TIME_WAIT状态，无法建立新的连接。`TCP/IP包的序号机制也可有效识别丢弃旧包！`
+
+如果服务器bind一个地址，这个地址刚好有一个TCP处于TIME_WAIT的状态，bind会返回`EADDRINUSE`(Address already in use)错误，这种情况出现在，服务器与客户端的连接socket执行了主动关闭，这个socket的TCP会处于TIME_WAIT状态，然后服务器重启尝试去bind这个地址，系统默认不允许bind， 解决办法是对这个socket使用`SO_REUSEADDR`选项，` SO_REUSEADDR`允许同一个端口上绑定多个`IP`，只要这些`IP`不同。
+
+
+
+* `Linux epoll EPOLLEXCLUSIVE （ since Linux 4.5）`
+
+  用于避免`epoll`惊群问题。具体参看`http://man7.org/linux/man-pages/man2/epoll_ctl.2.html`
+
+  
+
+* `SO_REUSEPORT(since Linux 3.9) `
+
+  允许多个进程线程监听同一个`ip:port`, 而且内核提供了一定的负载均衡能了。
+
+> ```c
+>               Permits multiple AF_INET or AF_INET6 sockets to be bound to an
+>               identical socket address.  This option must be set on each
+>               socket (including the first socket) prior to calling bind(2)
+>               on the socket.  To prevent port hijacking, all of the pro‐
+>               cesses binding to the same address must have the same effec‐
+>               tive UID.  This option can be employed with both TCP and UDP
+>               sockets.
+> 
+>               For TCP sockets, this option allows accept(2) load distribu‐
+>               tion in a multi-threaded server to be improved by using a dis‐
+>               tinct listener socket for each thread.  This provides improved
+>               load distribution as compared to traditional techniques such
+>               using a single accept(2)ing thread that distributes connec‐
+>               tions, or having multiple threads that compete to accept(2)
+>               from the same socket.
+> 
+>               For UDP sockets, the use of this option can provide better
+>               distribution of incoming datagrams to multiple processes (or
+>               threads) as compared to the traditional technique of having
+>               multiple processes compete to receive datagrams on the same
+>               socket.
+> ```
+
+
+
+* 惊群
+
+>从socket accept（`since linux 2.6`） 到` epoll wait`, 通俗地讲，只要多进程或多线程中， 大家都在关注同一个target, 如同一个`socket fd`or  `other fd`等,  大家都block在那监听， 一旦这个target有事件到来，大家都惊醒了， 确切地说是被操作系统唤醒的， 但是只有一个可以抢到这个target的处理权！其他没抢到的要重新睡去！这实在是浪费资源！操作系统无意义地调度大家醒来！此种情况被称为惊群效应。Linux系统都基本解决了！上面的参数选项就是。以前的解决方法就是加锁，只有一个可以抢到锁，所以不会大家都醒来！不过加锁还是有开销的；Linux自己不做无用功岂不是更好。
+
+
+
 
 
 【学习笔记，不严谨， 疏于考证，难免谬误，欢迎指正】
@@ -168,3 +225,5 @@
   `https://zhuanlan.zhihu.com/p/62389040`
 
   `https://zhuanlan.zhihu.com/p/61652809`
+  
+  `https://blog.csdn.net/u012398362/article/details/102747350`
