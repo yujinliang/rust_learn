@@ -40,7 +40,66 @@
 
 
 
->  `记住网络字节序就是大端字节序`
+* `记住网络字节序就是大端字节序`
+
+>  网络字节序就是大端字节序，这是标准规定。
+>
+>  主机字节序： 小端字节序或大端字节序， 一般`intel x86`的主机字节序是小端字节序。
+>
+>  字节序针对：数字（整数和浮点数）
+>
+>  大小端字节序定义， 及判断代码 in c/c++
+>
+>  Crate [byteorder](https://docs.rs/byteorder/1.3.2/byteorder/) for rust
+>
+>  
+>
+>  {小端口诀： 高对高，低对低。
+>
+>  大端口诀：高对地，低对高
+>
+>  内存地址都是从低向高增长}
+>
+>  
+>
+>  [verify byte order]
+>
+>  ```c++
+>  const int i = 1; 
+>  #define is_bigendian() ( (∗(char∗)&i) == 0 )
+>  ```
+>
+>  ```c++
+>  bool is_big_endian(void) {  
+>      union {       
+>          uint32_t i;    
+>          char c[4];   
+>      } bint = {0x01020304};   
+>      return bint.c[0] == 1;  
+>  }
+>  ```
+>
+>  [byte order reverse]
+>
+>  ```c++
+>  short reverseInt (char ∗c) { //c for big endian order for network
+>      int i;
+>      char ∗p = (char ∗)&i; //p for local computer
+>  
+>      if (is_bigendian()) {
+>          p[0] = c[0];
+>          p[1] = c[1];
+>          p[2] = c[2];
+>          p[3] = c[3];
+>      } else {
+>          p[0] = c[3];
+>          p[1] = c[2];
+>          p[2] = c[1];
+>          p[3] = c[0];
+>      }
+>  ```
+>
+>  
 
 
 
