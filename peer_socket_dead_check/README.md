@@ -136,7 +136,7 @@ TCP主动关闭一方，将会进入TIME_WAIT，这个状态需要维持`2MSL`�
 
 * `Linux epoll EPOLLEXCLUSIVE （ since Linux 4.5）`
 
-  用于避免`epoll`惊群问题。详情参看`http://man7.org/linux/man-pages/man2/epoll_ctl.2.html`
+  用于缓解`epoll`惊群问题。详情参看`http://man7.org/linux/man-pages/man2/epoll_ctl.2.html`
 
   
 
@@ -251,3 +251,5 @@ TCP主动关闭一方，将会进入TIME_WAIT，这个状态需要维持`2MSL`�
   `https://blog.didiyun.com/index.php/2018/11/27/linux-nginx/`
   
   `https://zhuanlan.zhihu.com/p/88181936`
+  
+  `https://zhuanlan.zhihu.com/p/53374516`
