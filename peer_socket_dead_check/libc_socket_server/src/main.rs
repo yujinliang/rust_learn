@@ -41,8 +41,7 @@ fn main()  {
             }
 
             //handle peer socket.
-            crossbeam::scope(|s| {
-                s.spawn(move |_| {
+            rayon::spawn(move || {
 
                     let mut buf = [1u8; 20];
                     loop {
@@ -98,9 +97,7 @@ fn main()  {
                         }
 
                     }
-
-                });
-            }).unwrap();
+            });
 
         } //end accept loop.
     }
