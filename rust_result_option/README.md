@@ -723,6 +723,46 @@
 >
 > ​        连成一串！写Rust代码就好像在做代数运算！
 
+* code case - collect usage
+
+```rust
+use uuid::Uuid;
+
+fn main() {
+    
+    let ill_s = "83a36f67-db75-4b8f-92a8-369001416a5e ,3f4d46ca-0b38-4f65-b915-d280187bcc4f,  
+    71ba44b1-eb6d-472c-841a-56f08f08ec87,                   d12be9e7-2eb6-4841-b9d0-275db66a4d6e,
+    f9942cff-c51e-4d48-9b8e-225edc397528,  I_AM_NOT_A_GUID";
+   /* let s = "83a36f67-db75-4b8f-92a8-369001416a5e,        3f4d46ca-0b38-4f65-b915-d280187bcc4f,  
+    71ba44b1-eb6d-472c-841a-56f08f08ec87,                   d12be9e7-2eb6-4841-b9d0-275db66a4d6e,
+    f9942cff-c51e-4d48-9b8e-225edc397528";*/
+    let r = extract_ids(ill_s);
+    println!("{:?}", r);
+}
+
+fn extract_ids(input: &str) -> Option<Vec<&str>> {
+    input
+        .split(',')
+        .map(|s| s.trim())
+        .map(|s| Uuid::parse_str(s).ok().map(|_| s))
+        .filter(|s| {
+            match s {
+                None => false,
+                _ => true,
+            }
+        })
+        .collect()
+}
+//因为 collect 遇到 None/Err 直接失败并直接原样返回， 故此采用filter过滤掉None/Err, 只把有效数据元素传递给collect!
+//否则去掉filter, 一旦出现非法uuid, 则collect整体失败！
+```
+
+> 运行结果：Some(["83a36f67-db75-4b8f-92a8-369001416a5e", "3f4d46ca-0b38-4f65-b915-d280187bcc4f", "71ba44b1-eb6d-472c-841a-56f08f08ec87", "d12be9e7-2eb6-4841-b9d0-275db66a4d6e", "f9942cff-c51e-4d48-9b8e-225edc397528"])
+>
+> [dependencies]
+>
+> uuid = "0.8.1"
+
 
 
 * All Example Code in folder: rust_result_option
