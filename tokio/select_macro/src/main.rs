@@ -1,6 +1,7 @@
-use tokio::time::{self, Duration,delay_for};
+use tokio::time::{self, Duration,delay_for,timeout};
 use tokio::stream::{self, StreamExt};
 use tokio::sync::{oneshot,mpsc,broadcast};
+use tokio::task;
 
 async fn some_computation(input: u32) -> String {
     format!("the result of computation {}", input)
@@ -8,7 +9,7 @@ async fn some_computation(input: u32) -> String {
 
 async fn some_async_work() {
     // do work
-    delay_for(Duration::from_millis(1)).await;
+    delay_for(Duration::from_millis(10)).await;
 }
 
 #[tokio::main]
@@ -43,12 +44,29 @@ async fn main() {
     });
     //time::interval
     let mut interval = time::interval(Duration::from_millis(2));
+    //join handle
+    let mut join_done = false;
+    let mut join_handle: task::JoinHandle<u8> = task::spawn(async {
+        // some work here
+        delay_for(Duration::from_millis(1)).await;
+        88
+    });
+    //time::timeout
+    let mut _to = timeout(Duration::from_millis(5), some_async_work());
 
     loop {
         tokio::select! {
             _ = &mut delay => {
+                println!("delay reached");
+                break;
+            },
+            /*_ = &mut to => {
                 println!("operation timed out");
                 break;
+            },compilation error*/
+            ret_code=&mut join_handle ,if !join_done => {
+                join_done = true;
+                println!("join handle case: {:?}", ret_code);
             },
             _= interval.tick() => {
                 println!("operation interval");
