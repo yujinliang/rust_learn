@@ -20,15 +20,15 @@ Linux系统有select/poll/epoll等，主要用于监控各种fd上发生的各�
 
    （1）The `select!` macro must be used inside of async （functions, closures, and blocks）.
 
-      (2)   每一个<async expression> and handler code 都是在当前task中执行的， 一旦block or long running 当前task所在的thread, 则select!没法检查其他branch case了！故此需避免此种情况，也可以调用tokio::spawn去并行执行，然后把join handle交给select!去监控即可。
+      (2)   每一个async expression and handler code 都是在当前task中执行的， 一旦block or long running 当前task所在的thread, 则select!没法检查其他branch case了！故此需避免此种情况，也可以调用tokio::spawn去并行执行，然后把join handle交给select!去监控即可。
 
    （3）else branch是必须的，可以避免当所有branch disable时, select! panic.
 
-   > `select!` panics if all branches are disabled **and** there is no provided `else` branch. A branch is disabled when the provided `if` precondition returns `false` **or** when the pattern does not match the result of `.
+   > select!` panics if all branches are disabled **and** there is no provided `else` branch. A branch is disabled when the provided `if` precondition returns `false` **or** when the pattern does not match the result of `.
 
-     (4) select!聚合所有enable branch的<async expression>并发执行， 一旦有执行完毕返回者， 则立即进行<pattern>模式匹配， 若匹配成功， 则执行<handler code>
+     (4) select!聚合所有enable branch的async expression并发执行， 一旦有执行完毕返回者， 则立即进行pattern模式匹配， 若匹配成功， 则执行handler code
 
-   （5）select!文档开篇就对其有明确的定义，等待所有branch并发执行， 当第一个branch完成时，取消剩余branch <async expression>的执行！这就产生一个问题，如果你的<async expression>磨磨唧唧block/long running在那，不及时执行完毕返回，一旦其他branch首先执行完毕返回， 则select!首先模式匹配之， 一旦成功， 则本轮其他未执行完毕的<async expression>则被取消，最终导致这个branch一直不会成功，就像不存在！所以timeout那样持续性的future不适合用select!检测，selecct!拒绝他！还有<async expression>和<handler code>必须是那种即刻执行完毕返回的代码块，不可以sleep/delay/timeout/wait some thing/long runing等等， 因为他会剥夺select!检查其他branch的机会！
+   （5）select!文档开篇就对其有明确的定义，等待所有branch并发执行， 当第一个branch完成时，取消剩余branch async expression的执行！这就产生一个问题，如果你的async expression磨磨唧唧block/long running在那，不及时执行完毕返回，一旦其他branch首先执行完毕返回， 则select!首先模式匹配之， 一旦成功， 则本轮其他未执行完毕的async expression则被取消，最终导致这个branch一直不会成功，就像不存在！所以timeout那样持续性的future不适合用select!检测，selecct!拒绝他！还有async expression和handler code必须是那种即刻执行完毕返回的代码块，不可以sleep/delay/timeout/wait some thing/long runing等等， 因为他会剥夺select!检查其他branch的机会！
 
    （6）切记区分“并发”和“并行”的不同！select!只是“并发”执行branch，并非"并行"！
 
@@ -48,18 +48,18 @@ Linux系统有select/poll/epoll等，主要用于监控各种fd上发生的各�
    }
    ```
 
-   > <precondition> 若为false, 则disable 此branch case,  but `async expression>` is still evaluated, but the resulting future is not polled.大意为：只是评估<async expression>得出一个future, 但是不会真正去执行这个future. <precondition> 若为true, 则正常run 此future.
+   > precondition 若为false, 则disable 此branch case,  but async expression is still evaluated, but the resulting future is not polled.大意为：只是评估async expression得出一个future, 但是不会真正去执行这个future. precondition 若为true, 则正常run 此future.
 
-   >  <pattern> 用于匹配<async expression>.await的执行结果.
+   >  pattern 用于匹配async expression.await的执行结果.
 
-   > <async expression> 一般代表一个可以后缀.await来实际执行的代码块，如async fn/block等.
+   > async expression 一般代表一个可以后缀.await来实际执行的代码块，如async fn/block等.
 
 4. select! 完整执行流程
 
-   > （1）Evaluate all provded <precondition> expressions. If the precondition returns false, disable the branch for the remainder of the current call to select!. Re-entering select! due to a loop clears the "disabled" state.
-   > （2）Aggregate the <async expression>s from each branch, including the disabled ones. If the branch is disabled, <async expression> is still evaluated, but the resulting future is not polled.
-   > （3）Concurrently await on the results for all remaining <async expression>s.
-   > （4）Once an <async expression> returns a value, attempt to apply the value to the provided <pattern>, if the pattern matches, evaluate <handler> and return. If the pattern does not match, disable the current branch and for the remainder of the current call to select!. Continue from step 3。
+   > （1）Evaluate all provided precondition expressions. If the precondition returns false, disable the branch for the remainder of the current call to select!. Re-entering select! due to a loop clears the "disabled" state.
+   > （2）Aggregate the async expressions from each branch, including the disabled ones. If the branch is disabled, async expression is still evaluated, but the resulting future is not polled.
+   > （3）Concurrently await on the results for all remaining async expressions.
+   > （4）Once an async expression returns a value, attempt to apply the value to the provided pattern, if the pattern matches, evaluate handler and return. If the pattern does not match, disable the current branch and for the remainder of the current call to select!. Continue from step 3。
    > （5）If all branches are disabled, evaluate the else expression. If none is provided, panic.
    >
    > 详情请参看： https://docs.rs/tokio/0.2.13/tokio/macro.select.html
@@ -172,7 +172,7 @@ Linux系统有select/poll/epoll等，主要用于监控各种fd上发生的各�
 
    6. 后记
 
-   tokio::select!和golang::select还是有很大不同的， 后者主要监控channel, 而前者用于监控<async expression>，不限于channel！也不是监控channel的可读可写状态！不同于一般意义上的io event poll, 本质上讲select!就是每次同时并发执行所有enabel branch的<async expression>.await，一旦其中某个有结果，则接着对结果执行模式匹配， 成功了则执行handler code.
+   tokio::select!和golang::select还是有很大不同的， 后者主要监控channel, 而前者用于监控async expression，不限于channel！也不是监控channel的可读可写状态！不同于一般意义上的io event poll, 本质上讲select!就是每次同时并发执行所有enabel branch的async expression.await，一旦其中某个有结果，则接着对结果执行模式匹配， 成功了则执行handler code.
 
    > 现在tokio::select!的编译报错相当不友好，一处出错整体泛红，令人无从下手。个人体会其可用性易用性和友好性远不如golang::select,确实需要打磨。
 
@@ -180,11 +180,11 @@ Linux系统有select/poll/epoll等，主要用于监控各种fd上发生的各�
 
    7. 疑问
 
-      > (1) tokio::select!只是描述接受<async expression>， 但是实验发现并非所有的<async expression>都被接受，比如：tokio::time::timeout, 我是在rust stable 1.42版本测试的， 有时间我在慢慢研究吧。
+      > (1) tokio::select!只是描述接受async expression， 但是实验发现并非所有的async expression都被接受，比如：tokio::time::timeout, 我是在rust stable 1.42版本测试的， 有时间我在慢慢研究吧。
       >
-      > (2)tokio::select!对于每一个branch case, 其实主要检测<async expression>.await是否执行返回， 那么对于channel 而言，容易检测已读已写！ 对于可读可写， 固然可以通过检查channel的len(), is_full(), is_empty()来判断， 但是当handler code被执行时，之前的判断很可能已经不成立！产生race condition问题，不知是否送多虑了？？？
+      > (2)tokio::select!对于每一个branch case, 其实主要检测async expression.await是否执行返回， 那么对于channel 而言，容易检测已读已写！ 对于可读可写， 固然可以通过检查channel的len(), is_full(), is_empty()来判断， 但是当handler code被执行时，之前的判断很可能已经不成立！产生race condition问题，不知是否送多虑了？？？
       >
-      > (3) 虽然其文档中明确描述select!随机挑选一个check, 但参看其文档中的执行流程，分明是先来先得， 即那个<async expression>先执行完毕返回，select!就先check它， 从实际测试代码的执行输出来看也体现如此！比较扎堆， <async expression>的并发随机执行由tokio::runtime::executor来保证， 但是select!文档却说随机挑选一个branch进行check ! 故此对其随机性和公平性我却有些疑惑了！
+      > (3) 虽然其文档中明确描述select!随机挑选一个check, 但参看其文档中的执行流程，分明是先来先得， 即那个async expression先执行完毕返回，select!就先check它， 从实际测试代码的执行输出来看也体现如此！比较扎堆， async expression的并发随机执行由tokio::runtime::executor来保证， 但是select!文档却说随机挑选一个branch进行check ! 故此对其随机性和公平性我却有些疑惑了！
 
    8. 参考资料
 
