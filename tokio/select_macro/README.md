@@ -30,7 +30,7 @@ Linux系统有select/poll/epoll等，主要用于监控各种fd上发生的各�
 
    （5）select!文档开篇就对其有明确的定义，等待所有branch并发执行， 当第一个branch完成时，取消剩余branch async expression的执行！这就产生一个问题，如果你的async expression磨磨唧唧block/long running在那，不及时执行完毕返回，一旦其他branch首先执行完毕返回， 则select!首先模式匹配之， 一旦成功， 则本轮其他未执行完毕的async expression则被取消，最终导致这个branch一直不会成功，就像不存在！所以timeout那样持续性的future不适合用select!检测，selecct!拒绝他！还有async expression和handler code必须是那种即刻执行完毕返回的代码块，不可以sleep/delay/timeout/wait some thing/long runing等等， 因为他会剥夺select!检查其他branch的机会！
 
-   （6）切记区分“并发”和“并行”的不同！select!只是“并发”执行branch，并非"并行"！
+   （6）切记区分“并发”和“并行”的不同！select!只是“并发”执行branch，并非"并行".
 
    
 
@@ -38,12 +38,15 @@ Linux系统有select/poll/epoll等，主要用于监控各种fd上发生的各�
 
    ```rust
    loop {
+       //每轮loop遍历重新评估每一个branch 所以一个branch不会一直disable.
        tokio::select! {
            <pattern> = <async expression> (, if <precondition>)? => {
                //handler code 
+               //the pattern failed or the precondition return false , then the branch 被认为disable branch
            },
            //...
             else => {println!("not match");},
+           //当所有branch都是disable branch时， select!去执行else branch, 若是没有else branch , 则panic.
        }
    }
    ```
