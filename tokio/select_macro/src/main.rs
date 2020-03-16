@@ -9,7 +9,8 @@ async fn some_computation(input: u32) -> String {
 
 async fn some_async_work() {
     // do work
-    delay_for(Duration::from_millis(10)).await;
+    delay_for(Duration::from_millis(1)).await;
+
 }
 
 #[tokio::main]
@@ -52,7 +53,7 @@ async fn main() {
         88
     });
     //time::timeout
-    let mut _to = timeout(Duration::from_millis(5), some_async_work());
+    //let mut to = timeout(Duration::from_millis(5), some_async_work());
 
     loop {
         tokio::select! {
@@ -60,10 +61,10 @@ async fn main() {
                 println!("delay reached");
                 break;
             },
-            /*_ = &mut to => {
+           /* _ = &mut to => {
                 println!("operation timed out");
                 break;
-            },compilation error*/
+            },*/
             ret_code=&mut join_handle ,if !join_done => {
                 join_done = true;
                 println!("join handle case: {:?}", ret_code);
@@ -73,6 +74,7 @@ async fn main() {
             },
             _ = some_async_work() => {
                 println!("operation completed");
+                //delay_for(Duration::from_millis(100000)).await;
             },
             Some(v) = stream1.next() => { println!("stream: {}", v);},
             v1 = (&mut rx1), if a.is_none()  =>  {
