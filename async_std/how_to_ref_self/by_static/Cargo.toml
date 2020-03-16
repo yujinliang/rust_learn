@@ -1,0 +1,10 @@
+[package]
+name = "by_static"
+version = "0.1.0"
+authors = ["yujinliang <285779289@qq.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std="1.5"
