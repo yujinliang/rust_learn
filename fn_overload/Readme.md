@@ -143,7 +143,7 @@ fn main() {
 
 - # `Variadic可变长参数`
 
-Rust现在不支持函数可变长参数，可通过宏来实现可变长参数， `宏: println!, vec!`就是典型例子， 另一些例子，如：
+Rust现在不直接支持函数可变长参数，但可通过宏来实现可变长参数， `宏: println!, vec!`就是典型例子， 另一些例子，如：
 
 ```rust
 macro_rules! sum {
