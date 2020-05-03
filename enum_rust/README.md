@@ -49,7 +49,7 @@ fn main() {
 }
 ```
 
-> 代码例子摘自：`https://doc.rust-lang.org/rust-by-example/custom_types/enum.html` ， 例子中分别定义了3中`enum variants`.   我认为非常类似于`empty struct、 tuple struct、 c like struct`等， 每一个`enum variant其实就是个struct` , 而且整个`rust enum也是在struct基础上的封装和扩展`， 正因如此`rust enum`比`c enum`而言拥有更强的封装和抽象能力，而非简单的分类！`enum`对于rust而言极其重要，比如`enum Option<T>和enum Result<T, E>` , 所以我认为有必要啰嗦一下。
+> 代码例子摘自：`https://doc.rust-lang.org/rust-by-example/custom_types/enum.html` ， 例子中分别定义了3中`enum variants`.   非常类似于`empty struct、 tuple struct、 c like struct`等，  `rust enum`比`c enum`而言拥有更强的封装和抽象能力，而非简单的分类！`enum`对于rust而言极其重要，比如`enum Option<T>和enum Result<T, E>` , 所以我认为有必要啰嗦一下。
 
 
 
@@ -170,6 +170,14 @@ fn main() {
 > 我们强烈建议您使用`rust bindgen和/或cbindgen`来管理您的`FFI`边界。Rust团队与这些项目密切合作，以确保它们工作可靠，并与当前和未来有关类型布局和`reprs`保证兼容。
 >
 > 由于`repr（C）`具有“用于`FFI`”和“用于布局控制”的双重用途，因此它可以应用于那些如果跨越`FFI`边界将是无意义的或有问题的类型。
+
+
+
+- `enum variants模式匹配`
+
+> if let 、 while let 、 match
+
+
 
 
 
