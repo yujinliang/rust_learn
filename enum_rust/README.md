@@ -179,6 +179,10 @@ fn main() {
 
 
 
+- `rust enum替代bool`
+
+> `bool`只可以表达二态， 而`enum`不仅可以表达二态而且可以表达多态，而且令代码更具可读性，并且更易理解！`rust编译器`对于`enum`的检查也更加严格，比如未覆盖所有`enum variants` , 详情请参考原文：`http://blakesmith.me/2019/05/07/rust-patterns-enums-instead-of-booleans.html` ， 最重要的是：`rust enum`不仅可以表达多种状态（事件/类型等），而且每个状态可以封装携带数据，再配合上`泛型、impl、trait` rust语言特性等！ 所以使得`rust enum`的抽象表达能力更强！
+
 
 
 - Author
@@ -200,5 +204,7 @@ fn main() {
 > `http://www.rust-compare.com/site/enums.html`
 >
 > `https://doc.rust-lang.org/rust-by-example/custom_types/enum.html`
+>
+> `http://blakesmith.me/2019/05/07/rust-patterns-enums-instead-of-booleans.html`
 >
 > `《深入浅出Rust》 范长春著 机械工业`
