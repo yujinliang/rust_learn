@@ -49,7 +49,7 @@ fn main() {
 }
 ```
 
-> 代码例子摘自：`https://doc.rust-lang.org/rust-by-example/custom_types/enum.html` ， 例子中分别定义了3中`enum variants`.   我认为非常类似于`empty struct、 tuple struct、 c like struct`等， 每一个`enum variant其实就是个struct` , 而且整个`rust enum也是在struct基础上的封装和扩展`， 正因如此`rust enum`比`c enum`而言拥有更强的封装和抽象能力，而非简单的分类！`enum`对于rust而言非常重要，比如`enum Option<T>和enum Result<T, E>` , 所以我认为有必要啰嗦一下。
+> 代码例子摘自：`https://doc.rust-lang.org/rust-by-example/custom_types/enum.html` ， 例子中分别定义了3中`enum variants`.   我认为非常类似于`empty struct、 tuple struct、 c like struct`等， 每一个`enum variant其实就是个struct` , 而且整个`rust enum也是在struct基础上的封装和扩展`， 正因如此`rust enum`比`c enum`而言拥有更强的封装和抽象能力，而非简单的分类！`enum`对于rust而言极其重要，比如`enum Option<T>和enum Result<T, E>` , 所以我认为有必要啰嗦一下。
 
 
 
@@ -173,3 +173,24 @@ fn main() {
 
 
 
+- Author
+
+> 学习随笔，如有谬误，尽请指正，谢谢。
+>
+> 作者：心尘了
+>
+> email: [285779289@qq.com](mailto:285779289@qq.com)
+>
+> 微信：13718438106
+
+
+
+- Reference
+
+> `https://rust-lang.github.io/unsafe-code-guidelines/layout/enums.html`
+>
+> `http://www.rust-compare.com/site/enums.html`
+>
+> `https://doc.rust-lang.org/rust-by-example/custom_types/enum.html`
+>
+> `《深入浅出Rust》 范长春著 机械工业`
