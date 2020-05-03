@@ -211,4 +211,8 @@ fn main() {
 >
 > `http://blakesmith.me/2019/05/07/rust-patterns-enums-instead-of-booleans.html`
 >
+> `https://doc.rust-lang.org/nomicon/other-reprs.html`
+>
+> `https://doc.rust-lang.org/reference/items/enumerations.html`
+>
 > `《深入浅出Rust》 范长春著 机械工业`
