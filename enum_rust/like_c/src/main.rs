@@ -10,6 +10,7 @@ enum Number {
 
 // enum with explicit discriminator
 #[repr(C)]
+#[derive(Debug, PartialEq, Eq)]
 enum Color {
     Red = 0xff0000,
     Green = 0x00ff00,
@@ -24,4 +25,9 @@ fn main() {
 
     println!("roses are #{:06x}", Color::Red as i32);
     println!("violets are #{:06x}", Color::Blue as i32);
+
+    let color = Color::Blue;
+    if color == Color::Blue { //must implement PartialEq trait.
+        println!("{:?}", color);
+    }
 }
