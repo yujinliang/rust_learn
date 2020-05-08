@@ -94,9 +94,141 @@ macro_rules! clr {
 
 
 
+- `[Crate bitflags] map struct to a bit flag set`
+
+```rust
+use std::fmt;
+
+#[macro_use]
+extern crate bitflags;
+
+bitflags! {
+    pub struct Flags: u32 {//模块可见性: private默认本模块可见， pub模块外也可见。
+        const A = 0b00000001;  
+        const B = 0b00000010;
+        const C = 0b00000100;
+        const ABC = Self::A.bits | Self::B.bits | Self::C.bits;
+    }
+}
+
+impl Flags {
+    pub fn clear(&mut self) {
+        self.bits = 0;  // The `bits` field can be accessed from within the
+                        // same module where the `bitflags!` macro was invoked.
+    }
+}
+
+impl fmt::Display for Flags {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "hi!")
+    }
+}
+
+fn main() {
+    //example1
+    let e1 = Flags::A | Flags::C;
+    let e2 = Flags::B | Flags::C;
+    assert_eq!((e1 | e2), Flags::ABC);   // union
+    assert_eq!((e1 & e2), Flags::C);     // intersection
+    assert_eq!((e1 - e2), Flags::A);     // set difference
+    assert_eq!(!e2, Flags::A);           // set complement
+    assert!(e1.contains(Flags::A));
+    //example2
+    let mut flags = Flags::A | Flags::B;
+    flags.clear();
+    assert!(flags.is_empty());
+    assert_eq!(format!("{}", flags), "hi!");
+    assert_eq!(format!("{:?}", Flags::A | Flags::B), "A | B");
+    assert_eq!(format!("{:?}", Flags::B), "B");
+}
+```
+
+> `Crate [bitflags](https://docs.rs/bitflags/1.2.1/bitflags/)` 此Rust Crate可以将一个`struct`转化为一个`bit flags set`, 自动完成映设和转化， 此处代码例子出自它的文档， 若要深入了解可去详细阅读之。
 
 
 
+- `[Crate enumflags2] map a enum to a bit flags set`
+
+```rust
+use enumflags2::BitFlags;
+
+#[derive(BitFlags, Copy, Clone, Debug, PartialEq)]
+#[repr(u8)]
+enum Test {
+    A = 0b0001,
+    B = 0b0010,
+    C = 0b0100,
+    D = 0b1000,
+}
+
+fn main() {
+
+    let a_b = Test::A | Test::B; // BitFlags<Test>
+    let a_c = Test::A | Test::C;
+    let b_c_d = Test::C | Test::B | Test::D;
+    
+    // BitFlags<Test>(0b11, [A, B])
+    println!("{:?}", a_b);
+    
+    // BitFlags<Test>(0b1, [A])
+    println!("{:?}", a_b & a_c);
+    
+    // Iterate over the flags like a normal set!
+    assert_eq!(a_b.iter().collect::<Vec<_>>(), &[Test::A, Test::B]);
+    
+    assert!(a_b.contains(Test::A));
+    assert!(b_c_d.contains(Test::B | Test::C));
+    assert!(!(b_c_d.contains(a_b)));
+    
+    assert!(a_b.intersects(a_c));
+    assert!(!(a_b.intersects(Test::C | Test::D)));
+}
+
+```
+
+> `https://docs.rs/enumflags2/0.6.4/enumflags2/` 此crate 将一个`rust enum`映设为一个`bit flags set!` 此处代码例子出自它的文档， 若要深入了解可去详细阅读之。
+>
+> 看来一定的抽象和封装是应对复杂和繁琐的有效手段！一定的抽象和封装使枯燥繁琐的位操作变得更具有更好的可读性，更强的表达能力， 类型和命名是个好武器，将位映设关系固化自动化！从而降低使用难度，降低出错率。
+>
+> 但是人们没有就此止步，因为实际嵌入式编程中，我们直接与一个个`寄存器`交互， 从而控制硬件！所以`寄存器`只需暴露一个个`API`就好，而其内部的位操作和映设关系最好封装起来，外部无需了解！从而降低使用复杂度！实际编码中，我们只需要定义好一个个`寄存器`， 然后调用其`API`就好， 清晰明确，不易出错,介绍一个这样的`rust crate`  : `bounded_registers` ,  ` [bounded_registers](https://docs.rs/bounded-registers/0.1.1/bounded_registers/)`  , 其设计了形式化的格式来定义每一个`寄存器`， 然后定义了统一的方法操作`寄存器`的状态值，若要深入了解，请参阅其文档。
+
+
+
+- 结束语
+
+`我们经常说，计算机编程领域应对复杂繁琐的有效武器之一就是：“增加一层，将复杂和繁琐抽象出来，封装起来形成一层代理”` 
+
+
+
+- 作者
+
+> 学习随笔，如有谬误，望请海涵雅正，谢谢。
+>
+> 作者：心尘了
+>
+> email: [285779289@qq.com](mailto:285779289@qq.com)
+
+
+
+- Reference
+
+> `https://opensource.com/article/20/1/c-vs-rust-abstractions`
+>
+> `https://docs.rs/bitflags/1.2.1/bitflags/`
+> `https://docs.rs/bounded-registers/0.1.1/bounded_registers/`
+> `https://stackoverflow.com/questions/43509560/how-to-implement-bitwise-operations-on-a-bitflags-enum`
+> `https://docs.rs/enumflags2/0.6.4/enumflags2/`
+>
+> `https://stackoverflow.com/questions/40467995/how-do-you-set-clear-and-toggle-a-single-bit-in-rust`
+>
+> `https://doc.rust-lang.org/std/primitive.i8.html`
+> `https://doc.rust-lang.org/std/primitive.u8.html`
+> `https://doc.rust-lang.org/std/#primitives`
+>
+> `https://doc.rust-lang.org/book/appendix-02-operators.html`
+> `https://github.com/rsdump/rit`
+> `https://doc.rust-lang.org/reference/expressions/operator-expr.html#arithmetic-and-logical-binary-operators`
+> `https://rust-lang-nursery.github.io/rust-cookbook/data_structures/bitfield.html`
 
 
 
