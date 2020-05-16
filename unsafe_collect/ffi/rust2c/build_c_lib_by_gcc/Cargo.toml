@@ -1,0 +1,9 @@
+[package]
+name = "build_c_lib_by_gcc"
+version = "0.1.0"
+authors = ["yujinliang <285779289@qq.com>"]
+edition = "2018"
+build="build.rs" #关键点，启用构建脚本build.rs。
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
