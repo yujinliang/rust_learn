@@ -6,4 +6,16 @@ edition = "2018"
 build="build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+
+[features]
+default = ["foo_1"] # cargo build /run 默认开启的feature。
+foo_1 = [] #定义一个feature。
+foo_2 = []
+foo_3 = [] # 方括号中列出此feature依赖的其他feature， 逗号分割。
+
+#cargo build/run --features "foo_2"
+#cargo build/run #默认开启default feature
+#cargo run --features "foo_2 foo_3"
+
 [dependencies]
+
