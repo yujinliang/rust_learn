@@ -8,3 +8,4 @@ edition = "2018"
 #`https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html`
 [dependencies]
 thiserror_t = { path = "../thiserror_t"}
+anyhow = "1.0.31"

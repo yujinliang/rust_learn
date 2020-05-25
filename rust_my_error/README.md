@@ -51,6 +51,8 @@ C语言大家基本都学过， C函数返回不同的有符号整数,用于表�
 
 
 
+#### Rust: Cargo 使用本地的 crate（本地包代码）
+
 
 
 - Author
@@ -69,3 +71,7 @@ C语言大家基本都学过， C函数返回不同的有符号整数,用于表�
 `https://nick.groenen.me/posts/rust-error-handling/`
 
 `https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html`
+
+`https://mozillazg.com/2017/10/rust-cargo-use-local-crate-package.html`
+
+`https://doc.rust-lang.org/rust-by-example/cargo/deps.html`
