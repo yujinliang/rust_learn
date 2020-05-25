@@ -5,6 +5,8 @@ authors = ["yujinliang <285779289@qq.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+#特别提醒，如果此处lib name与package的name不一致， 则会导致其他crate引用本crate时失败，找不到！
+#crate: anyhow_t`s Cargo.toml 引用本crate的dependencies: thiserror_t = { path = "../thiserror_t"}
 #[lib]
 #name="tt"
 #crate-type=["rlib", "dylib"]
