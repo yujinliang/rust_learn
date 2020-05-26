@@ -99,6 +99,10 @@ fn main() {
 ```
 
 > 强调一下: move语义是所有Rust数据类型默认语义，而只有实现了std::marker::Copy trait 的类型，才会执行复制语义。 如基本数据类型：数字、字符、bool等都实现了Copy trait。
+>
+> Rust借用检查规定： &mut 型借用是排他的！就像皇帝自称寡人， 独一无二 ，所以不允许有其他同时存在的&只读借用和&mut型借用，否则编译器报错！而&只读借用则放松的多，允许同时存在多个&只读借用。
+>
+> 所以这就导致实现IterMut就非常困难！甚至需要一些unsafe的方法！
 
 ------
 
@@ -138,6 +142,16 @@ fn main() {
 > `https://stackoverflow.com/questions/30218886/how-to-implement-iterator-and-intoiterator-for-a-simple-struct`
 >
 > `https://rust-unofficial.github.io/too-many-lists/second-into-iter.html`
+>
+> `https://stackoverflow.com/questions/61978903/how-do-i-create-mutable-iterator-over-struct-fields`
+>
+> `https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=0a4985c71ce91c1ed956fdfee200ff67`
+>
+> `https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=023ed8c692fc3159f4c43a9d12f5746e`
+>
+> `https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=7ca09addf7c96ac4791c43f38cf1b61f`
+>
+> `https://rust-unofficial.github.io/too-many-lists/second-iter-mut.html`
 >
 > 
 
