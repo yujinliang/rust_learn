@@ -75,7 +75,7 @@ impl<'a> IntoIterator for &'a mut Pixel {
 
     fn into_iter(self) -> Self::IntoIter {
         PixelMutIterator {
-            pixel: self, //注意self的具体类型为：&'a Pixel
+            pixel: self, //注意self的具体类型为：&'a mut Pixel
             index: 0,
         }
     }
@@ -88,7 +88,7 @@ impl<'a> Iterator for PixelMutIterator<'a> {
     type Item =  &'a mut i8;
     fn next(&mut self) -> Option<Self::Item> {
         let result = match self.index {
-            0 => &mut self.pixel.r,
+            0 => &mut ( **self.pixel).r,
             1 => &mut self.pixel.g,
             2 => &mut self.pixel.b,
             _ => return None,
