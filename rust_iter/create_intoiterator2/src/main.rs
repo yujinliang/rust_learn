@@ -38,7 +38,7 @@ impl Iterator for PixelIntoIterator {
 
 //ref semantic 
 impl<'a> IntoIterator for &'a Pixel {
-    type Item = i8;
+    type Item =&'a  i8;
     type IntoIter = PixelIterator<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -55,12 +55,12 @@ struct PixelIterator<'a> {
 }
 
 impl<'a> Iterator for PixelIterator<'a> {
-    type Item = i8;
-    fn next(&mut self) -> Option<i8> {
+    type Item = &'a i8;
+    fn next(&mut self) -> Option<&'a i8> {
         let result = match self.index {
-            0 => self.pixel.r,
-            1 => self.pixel.g,
-            2 => self.pixel.b,
+            0 => &self.pixel.r,
+            1 => &self.pixel.g,
+            2 => &self.pixel.b,
             _ => return None,
         };
         self.index += 1;
