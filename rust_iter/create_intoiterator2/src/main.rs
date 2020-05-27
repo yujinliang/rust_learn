@@ -75,26 +75,29 @@ impl<'a> IntoIterator for &'a mut Pixel {
 
     fn into_iter(self) -> Self::IntoIter {
         PixelMutIterator {
-            pixel: self, //注意self的具体类型为：&'a mut Pixel
+            pixel: Some(self), //注意self的具体类型为：&'a mut Pixel
             index: 0,
         }
     }
 }
+
 struct PixelMutIterator<'a> {
-    pixel: &'a mut Pixel,
+    pixel: Option<&'a mut Pixel>,
     index: usize,
 }
 impl<'a> Iterator for PixelMutIterator<'a> {
     type Item =  &'a mut i8;
     fn next(&mut self) -> Option<Self::Item> {
-        let result = match self.index {
-            0 => &mut ( **self.pixel).r,
-            1 => &mut self.pixel.g,
-            2 => &mut self.pixel.b,
-            _ => return None,
-        };
-        self.index += 1;
-        Some(result)
+        self.pixel.take().map(|pixel| {
+            let idx = self.index;
+            self.index += 1;
+            match idx {
+                0 =>  &mut pixel.r,
+                1 =>  &mut pixel.g,
+                2 =>  &mut pixel.b,
+                _ => &mut pixel.r,
+            }
+        })
     }
 }
 
@@ -108,6 +111,7 @@ fn main() {
     //ref mut semantic test case. 
     for c in &mut p {
         println!("ref mut semantic: {}", c);
+        *c = 100;
     }
     //ref semantic test case.
     for c in &p {
