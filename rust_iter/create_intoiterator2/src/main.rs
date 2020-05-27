@@ -88,9 +88,12 @@ struct PixelMutIterator<'a> {
 impl<'a> Iterator for PixelMutIterator<'a> {
     type Item =  &'a mut i8;
     fn next(&mut self) -> Option<Self::Item> {
+        let idx = self.index;
+        self.index += 1;
+        if idx >3 {
+            return None;
+        }
         self.pixel.take().map(|pixel| {
-            let idx = self.index;
-            self.index += 1;
             match idx {
                 0 =>  &mut pixel.r,
                 1 =>  &mut pixel.g,
