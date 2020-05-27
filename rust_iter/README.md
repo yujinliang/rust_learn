@@ -104,7 +104,7 @@ fn main() {
 >
 > 所以这就导致实现IterMut就非常困难！甚至需要一些unsafe的方法！我收集了几个高手写的trick代码，确实麻烦！其中我尝试的例子`rust_iter/create_intoiterator2` 编译报错，没有跑通！难点就在报错处，需要一点hack trick可能才能通过！也有高手说如果Rust可以提供GAT（`generic associated types` ）特性， 那么实现mutual reference iterator的难点就解决了。
 >
-> 实现mutual reference iterator的难点：1. lifetime问题，随着引用传递链越来越长，lifetime越来越难以分析和表述！（Rust 借用原则铁律：引用的lifetime不得大于被引用者的lifetime！）2. `&'a mut`型可变引用具有排他性，必须独一无二！即被引用者被冻结，同时不允许其拥有其他引用！所以mutual reference iterator实现时必须保证`&'a mut`型引用的孤家寡人原则。
+> 实现mutual reference iterator的难点：1. lifetime问题，随着引用传递链越来越长，lifetime越来越难以分析和表述！（Rust 借用原则铁律：引用的lifetime不得大于被引用者的lifetime！）2. `&'a mut`型可变引用具有排他性，必须独一无二！即被引用者被冻结，同时不允许其拥有其他引用！所以mutual reference iterator实现时必须保证`&'a mut`型引用的孤家寡人原则。第2点为主要难点！
 
 ------
 
