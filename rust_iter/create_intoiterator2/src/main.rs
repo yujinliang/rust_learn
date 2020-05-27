@@ -93,6 +93,7 @@ impl<'a> Iterator for PixelMutIterator<'a> {
         if idx >3 {
             return None;
         }
+        //虽然跑通了，但是因为self.pixel被take之后变为None了， 所以不能循环了， 只能输出第一个元素。
         self.pixel.take().map(|pixel| {
             match idx {
                 0 =>  &mut pixel.r,
