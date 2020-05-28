@@ -4,7 +4,19 @@
 
 > * iter()  => &T
 > * iter_mut() => &mut T
-> * into_iter() => T
+> * into_iter() => T //不一定为T, 也可能是&T、&mut T ;由into_iter()调用者自身的引用方式决定。请看`rust_iter/create_intoiterator2`代码片段：
+>
+> ```rust
+> //IntoIterator trait 意思很直白，即是生成一个Iterator。
+> //move semantic
+> impl IntoIterator for Pixel {...} //T
+> //ref semantic 
+> impl<'a> IntoIterator for &'a Pixel {...} //&T
+> //ref mut semantic
+> impl<'a> IntoIterator for &'a mut Pixel {...}//&mut T
+> ```
+>
+> 本文代码例子都放在：`https://github.com/yujinliang/rust_learn/tree/master/rust_iter`
 
 
 
@@ -80,7 +92,7 @@ println!("{}", x);
 
 标准库容器，包括自定义类型，如果可以被for遍历，形如 for x in v ；for x in &v; for x in &mut v; 需要实现Trait IntoIterator，对于容器v不同的引用方式，直接决定最终生成的Iterator对于容器中元素的指向关系！
 
-实现Trait IntoIterator, 只要调用其into_iter()方法就可以生成相应的迭代器Iterator ，有了容器的Iterator之后，for就可以遍历容器了！注意IntoIterator的名字很直白，就是变成一个对应的Iterator, 分为3种，如：T, &T, &mut T ，即对于容器中元素区分3种指向关系：拥有所有权、借用、可读可修改；
+实现Trait IntoIterator, 只要调用其into_iter()方法就可以生成相应的迭代器Iterator ，有了容器的Iterator之后，for就可以遍历容器了！注意IntoIterator的名字很直白，就是变成一个对应的Iterator, 分为3种，如：T, &T, &mut T ，即对于容器中元素区分3种指向关系：拥有所有权、只读借用、可读可修改；
 
 不限于for , 只要一个类型实现Trait IntoIterator, 那么调用into_iter()方法就可以获得相应的Iterator ! 形如：a_var.into_iter()  、 （&a_var).into_iter()、 (&mut a_var).into_iter() ， 从而生成相应的Iterator： 拥有所有权、只读引用、可读写引用。
 
@@ -90,6 +102,7 @@ println!("{}", x);
 fn main() {
     let v = vec![1, 2, 3];
     let mut iter = v.into_iter(); //一旦调用into_iter, 则v的所有权被转移进iter, 后面语句若再访问v, 则编译报错。
+    //(&v).into_iter() / (&mut v).into_iter() 可以避免v的所有权被move走。
     assert_eq!(Some(1), iter.next());
     assert_eq!(Some(2), iter.next());
     assert_eq!(Some(3), iter.next());
@@ -108,9 +121,7 @@ fn main() {
 
 ------
 
-
-
-
+> Rust迭代器及其各种方法的代码例子， 我推荐： `https://github.com/rustomax/rust-iterators` ， 讲解的简洁易懂！讲的真好！另一篇文章讲解得也相当好，推荐`https://www.worthe-it.co.za/programming/2019/08/01/rust-iterators-cheatsheet.html` ， 反复研读必有所获。
 
 
 
