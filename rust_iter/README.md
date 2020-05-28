@@ -3,20 +3,24 @@
 我认为熟记吃透Rust Option、Result、Iterator这3块的方法集，非常有助于写出简洁高效符合Rust Style的代码！原理性的东西好多前辈都讲过了，我就不啰嗦了！这三块的方法功用必须要记牢！我收集了几个常用方法的小例子，方便查询记忆而已。
 
 > * iter()  => &T
+>
 > * iter_mut() => &mut T
+>
 > * into_iter() => T //不一定为T, 也可能是&T、&mut T ;由into_iter()调用者自身的引用方式决定。请看`rust_iter/create_intoiterator2`代码片段：
 >
-> ```rust
-> //IntoIterator trait 意思很直白，即是生成一个Iterator。
-> //move semantic
-> impl IntoIterator for Pixel {...} //T
-> //ref semantic 
-> impl<'a> IntoIterator for &'a Pixel {...} //&T
-> //ref mut semantic
-> impl<'a> IntoIterator for &'a mut Pixel {...}//&mut T
-> ```
->
-> 本文代码例子都放在：`https://github.com/yujinliang/rust_learn/tree/master/rust_iter`
+>   `本文代码例子都放在：https://github.com/yujinliang/rust_learn/tree/master/rust_iter`
+
+
+
+```rust
+//IntoIterator trait 意思很直白，即是生成一个Iterator。
+//move semantic
+impl IntoIterator for Pixel {...} //T
+//ref semantic 
+impl<'a> IntoIterator for &'a Pixel {...} //&T
+//ref mut semantic
+impl<'a> IntoIterator for &'a mut Pixel {...}//&mut T
+```
 
 
 
