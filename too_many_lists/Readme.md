@@ -1,4 +1,4 @@
-# 					Too -many-lists学习随笔
+# 					Too -many-lists学习摘要
 
 - IterMute实现要点难点
 
