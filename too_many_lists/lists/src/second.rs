@@ -96,7 +96,7 @@ pub struct IterMut<'a, T> {
 //https://rust-unofficial.github.io/too-many-lists/second-iter-mut.html
 //IterMut之所以可以工作， 原文给出了2个理由：
 //1. 通过take确实保证了&mut型引用的唯一排他性。
-//2. 
+//2. https://doc.rust-lang.org/nomicon/borrow-splitting.html
 impl<T> List<T> {
     pub fn iter_mut(&mut self) -> IterMut<'_, T> {
         //this works coz: Rust understands that it's ok to shard a mutable reference into the subfields of the pointed-to struct, 
