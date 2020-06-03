@@ -73,6 +73,50 @@ fn main() {
 
 ```
 
+【结构体及其自成员析构顺序验证例子】
+
+```rust
+#[derive(Debug)]
+struct SubField(u8);
+
+impl Drop for SubField {
+    fn drop(&mut self) {
+        println!("{:?}", self);
+    }
+}
+
+#[derive(Debug)]
+struct HasDrop
+{
+    a: SubField,
+    b:SubField,
+    c:SubField,
+    d:SubField,
+} //你的自定义类型。
+
+impl Drop for HasDrop {
+    fn drop(&mut self) { 
+        println!("HasDrop!");
+    }
+}
+
+fn main() {
+    let _x = HasDrop{a:SubField(1), b:SubField(2), c:SubField(3), d:SubField(4)};
+}
+
+/*
+* Program Output:
+*HasDrop!
+*SubField(1)
+*SubField(2)
+*SubField(3)
+*SubField(4)
+*/
+//从程序输出确认析构顺序： 先父后子， 而每一个子成员析构顺序由其定义顺序决定。
+```
+
+
+
 - 官方文档-析构顺序规定
 
 > The destructor of a type consists of
