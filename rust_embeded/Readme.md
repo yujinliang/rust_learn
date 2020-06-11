@@ -28,6 +28,8 @@
 > `https://dev.to/verkkokauppacom/creating-an-ffi-compatible-c-abi-library-in-rust-5dji`
 >
 > `https://gankra.github.io/blah/rust-layouts-and-abis/`
+>
+> `https://github.com/rust-lang/rfcs/blob/master/text/0131-target-specification.md`
 
 
 
