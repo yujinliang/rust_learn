@@ -24,6 +24,10 @@
 > `https://doc.rust-lang.org/reference/index.html`
 > `https://doc.rust-lang.org/nomicon/index.html`
 > `https://doc.rust-lang.org/nightly/unstable-book/index.html`
+>
+> `https://dev.to/verkkokauppacom/creating-an-ffi-compatible-c-abi-library-in-rust-5dji`
+>
+> `https://gankra.github.io/blah/rust-layouts-and-abis/`
 
 
 
@@ -32,6 +36,34 @@
 > `https://fasterthanli.me/blog/2020/whats-in-a-linux-executable/`
 >
 > `https://fasterthanli.me/blog/2020/a-no-std-rust-binary/`
+
+
+
+- [`Rust ABI`]
+
+> `https://doc.rust-lang.org/stable/reference/abi.html`
+>
+> `https://doc.rust-lang.org/stable/reference/items/external-blocks.html#abi`
+>
+> `https://doc.rust-lang.org/stable/reference/items/functions.html#extern-function-qualifier`
+>
+> `https://doc.rust-lang.org/stable/reference/attributes.html#meta-item-attribute-syntax`
+>
+> `https://doc.rust-lang.org/nomicon/other-reprs.html#reprc`
+
+
+
+- [`Rust ASM inline assembly`]
+
+> ​    `https://blog.rust-lang.org/inside-rust/2020/06/08/new-inline-asm.html`
+>
+> Rust 实现了兼容`C ABI` ，从而实现了`C and Rust`互操作！现在又通过更加强大清晰的新语法支持内嵌汇编语言代码！
+>
+> 这样Rust在嵌入式，操作系统开发领域就妥妥地站稳脚跟！也就是说系统级开发语言圈：汇编语言、C、C++ 中，现在必须加上Rust。
+>
+> 而`Rust自身 ABI`的定义却不那么紧迫了！因为对于一门快速迭代成长的新兴系统级编程语言而言，过早地限定其`ABI`反而阻碍其进化优化！
+
+
 
 
 
