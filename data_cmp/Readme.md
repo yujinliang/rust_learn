@@ -183,7 +183,17 @@ impl Ord for FileInfo {
 
 有了它，即上面的`Ord实现`， 就可以排序一个`Vec<FileInfo>`了， 换句话说，这个`Vec<FileInfo>`能排序了！
 
-
+> # 全序定义
+>
+> 　　在集合A中，如果对于任意a∈A, b∈A, 有aRb或bRa，即A中的每对元素都满足关系R，则集合A上的偏序R是全序的或线性序的。
+>
+> 【我的理解】：
+>
+> 实现PartialOrd偏序只是说明你的自定义类型可以比较大小，但是不保证集合中每一对元素都可以明确分出大小尊卑长幼，哈哈！
+>
+> 但是实现Ord全序则说明你的自定义类型，在其值域集合中的每一对元素都可以明确比较出大小尊卑长幼！即：x <= y 或y >= x二者之一必然成立！
+>
+> 再通俗地将： PartialOrd偏序代表可比较， Ord全序代表可排序！！！先要能可比较，方可能排序！！！
 
 ------
 
@@ -416,3 +426,15 @@ fn main() {
 > email: [285779289@qq.com](mailto:285779289@qq.com)
 >
 > 微信：13718438106
+
+
+
+- Reference:
+
+> `https://www.cnblogs.com/hibernate6/archive/2012/01/17/2521942.html`
+>
+> `https://doc.rust-lang.org/std/cmp/trait.Ord.html`
+>
+> `https://doc.rust-lang.org/std/cmp/trait.Eq.html`
+>
+> `https://doc.rust-lang.org/std/cmp/index.html`
