@@ -62,10 +62,10 @@ fn main() {
     let mut test1 = Test::new("test1");
     let mut test1_pin = unsafe { Pin::new_unchecked(&mut test1) };
     Test::init(test1_pin.as_mut());
-    drop(test1_pin); //Pin指针被提前drop , 因为test1未被遮蔽， 后面代码仍然可以访问到， 但是test1已被清空，内部指针归0.
+    drop(test1_pin); //Pin指针被提前drop , 因为test1未被遮蔽， 后面代码仍然可以访问到， 但是test1已被析构
  
     let mut test2 = Test::new("test2");
     mem::swap(&mut test1, &mut test2);
-    println!("Not self referential anymore: {:?}", test1.b); //test1.b == 0x00 ， Pin析构时清空了test1 所指的Test Struct, 其内部指针归0， 
+    println!("Not self referential anymore: {:?}", test1.b); //test1.b == 0x00 ， Pin析构时析构了test1 所指的Test Struct, 其内部指针归0， 
     //所以说不再是自引用。
  }*/
