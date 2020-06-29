@@ -37,7 +37,9 @@ impl Test {
 //当然C++的语言哲学是：后果自负，作死活该！所以有坑有洞自己看着点！而Rust的语言哲学是：见洞就堵，见坑就填，作死就滚！
 //如何优雅高效彻底解决`self-referential structs` ， Rust语言还在反复不断探讨！旷日持久！
 //这正式我热爱Rust的地方， 对于每一个语言特性都要千锤百炼，绝不滥竽充数， 而且对于发现潜在问题的语言特性零容忍，坚决砍去！
-
+//所以彻底完整的解决方法还在讨论， 为了实现poll a future,  搞个Pin /UnPin就够用了！
+//Pin的意思就是像钉子那样钉在那里不准移动！这样`self-referential structs`的指针问题就没有啦！
+//当然对于`非self-referential structs`的类型标记为UnPin , 即使被Pin也无影响，照样Move, 因为不存在自引用，完全安全呀！
 fn main() {
     let mut test1 = Test::new("test1");
     test1.init();
