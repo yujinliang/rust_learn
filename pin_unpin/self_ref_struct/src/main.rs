@@ -1,4 +1,3 @@
-use std::pin::Pin;
 
 #[derive(Debug)]
 struct Test {
