@@ -148,9 +148,39 @@ fn main() {
 > //我在想，对于detached task by task::spawn这一情况，static确实需要！但是对于JoinHandle类型task::spawn这一情况， 当前函数代码块持有JoinHanle.await, 那么对于self的严格static要求是否可以视情况而定放宽一点？！因为JoinHandle.await block当前代码块不会死掉，一直等待task被调度执行完毕返回！当然这需要rust编译器和crate更紧密配合，不容易呀！所以我认为可能有改进空间，并未详细考证， 粗鄙乱议而已！
 > ```
 
+
+
+- by Pin
+
+```rust
+use async_std::task;
+use std::pin::Pin;
+
+struct Circle {
+    radius:f64
+}
+impl Circle {
+    async fn area(self : Pin<Box<Self>>) -> f64 {
+        let join_handle = task::spawn(async move {
+            2.0*3.1415*self.radius  //spawn need : self is required to live as long as `'static` here
+        });
+        join_handle.await
+    }
+
+}
+fn main() {
+    task::block_on(async {
+        let by_arc = Box::pin(Circle{radius:30.5});
+        println!("{}", by_arc.area().await);
+    })
+}
+```
+
+
+
 - 总结
 
-  本人水平和精力有限，目前只是整理了以上4中方法， 只做抛砖引玉，希望高人指点收集更多好方法！上面给出的第一个方法为通用方法， 大家都用！官方也是这么用！所以推荐给大家！其后的方法或多或少都有一定的局限性，适用面窄！只当拓宽思路！再啰嗦两句，Rust异步编程的引入明显加大了`生命周期`分析的难度！Rust语言自身及其`tokio/async-std/future`等crates也在逐步成熟完善之中，易用性也在不断提高！不断求索吧！加油！
+  本人水平和精力有限，目前只是整理了以上5中方法， 只做抛砖引玉，希望高人指点收集更多好方法！上面给出的第一个方法为通用方法， 大家都用！官方也是这么用！所以推荐给大家！其后的方法或多或少都有一定的局限性，适用面窄！只当拓宽思路！再啰嗦两句，Rust异步编程的引入明显加大了`生命周期`分析的难度！Rust语言自身及其`tokio/async-std/future`等crates也在逐步成熟完善之中，易用性也在不断提高！不断求索吧！加油！
 
 >  代码仓库:`https://github.com/yujinliang/rust_learn/tree/master/async_std/how_to_ref_self`
 
