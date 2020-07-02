@@ -300,6 +300,31 @@
 
 
 
+- Drop for pinning type
+
+> 请看官方文档：`https://doc.rust-lang.org/nightly/std/pin/index.html#drop-implementation`
+>
+> 
+>
+> 这块资料太少，我也没有弄得太明白，以后再深入研究吧
+>
+> ```
+> impl Drop for Type {
+>     fn drop(&mut self) { 
+>         // `new_unchecked` is okay because we know this value is never used
+>         // again after being dropped.
+>         inner_drop(unsafe { Pin::new_unchecked(self)}); 
+>         fn inner_drop(this: Pin<&mut Type>) {
+>             // Actual drop code goes here.
+>         }
+>     }
+> }
+> ```
+
+
+
+
+
 
 
 - Author
