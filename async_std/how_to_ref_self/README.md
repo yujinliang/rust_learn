@@ -1,4 +1,4 @@
-## Rust `async` block-future-task::spawn-how to ref self
+## Rust `async` future  task::spawn-how to ref self
 
 - 综述
 
@@ -178,6 +178,20 @@ fn main() {
 
 
 
+- Author
+
+> 学习随笔，如有谬误，望请海涵雅正，谢谢。
+>
+> 作者：心尘了
+>
+> email: [285779289@qq.com](mailto:285779289@qq.com)
+>
+> git: https://github.com/yujinliang
+
+
+
+
+
 - 总结
 
   本人水平和精力有限，目前只是整理了以上5中方法， 只做抛砖引玉，希望高人指点收集更多好方法！上面给出的第一个方法为通用方法， 大家都用！官方也是这么用！所以推荐给大家！其后的方法或多或少都有一定的局限性，适用面窄！只当拓宽思路！再啰嗦两句，Rust异步编程的引入明显加大了`生命周期`分析的难度！Rust语言自身及其`tokio/async-std/future`等crates也在逐步成熟完善之中，易用性也在不断提高！不断求索吧！加油！
@@ -186,13 +200,19 @@ fn main() {
 
 
 
+
+
 - Reference
 
-https://stackoverflow.com/questions/48613350/how-to-return-a-future-combinator-with-self
+`https://stackoverflow.com/questions/48613350/how-to-return-a-future-combinator-with-self`
 
-https://docs.rs/futures/0.3.4/futures/future/trait.FutureExt.html#method.then
+`https://docs.rs/futures/0.3.4/futures/future/trait.FutureExt.html#method.then`
 
-https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html
+`https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html`
 
-https://docs.rs/async-std/1.5.0/async_std/task/fn.spawn.html
+`https://docs.rs/async-std/1.5.0/async_std/task/fn.spawn.html`
+
+`https://github.com/rust-lang/rust/pull/56805`
+
+`https://doc.rust-lang.org/nightly/std/pin/index.html`
 
