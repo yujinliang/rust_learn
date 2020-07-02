@@ -30,6 +30,10 @@
 > `https://gankra.github.io/blah/rust-layouts-and-abis/`
 >
 > `https://github.com/rust-lang/rfcs/blob/master/text/0131-target-specification.md`
+>
+> `https://www.collabora.com/news-and-blog/blog/2020/06/23/cross-building-rust-gstreamer-plugins-for-the-raspberry-pi/`
+>
+> `https://github.com/rust-lang/rfcs/pull/2873`
 
 
 
