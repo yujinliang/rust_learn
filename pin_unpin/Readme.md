@@ -304,7 +304,7 @@
 
 > 请看官方文档：`https://doc.rust-lang.org/nightly/std/pin/index.html#drop-implementation`
 >
-> 
+> 大概意思好像说：如果你的类型应用了Pin,  并且此类型impl 了Drop trait , 鉴于fn drop现在仍然是以&mut Self作为方法receiver ， 并且fn drop由编译器自动调用， 导致直接越过了Pin的围墙， 理论上说， 一旦对一个类型应用了Pin,  那么所有的访问都要通过Pin, 形如： Pin<&Self>、 Pin<&mut Self>、 Pin<Box<Self>>等形式来访问！不得越过Pin, 直接访问原始&self, &mut self!  可能引发Bug,  所以下面的析构函数中， 首先将&mut Self 转化为Pin类型， 然后才开始执行具体的析构代码。
 >
 > 这块资料太少，我也没有弄得太明白，以后再深入研究吧
 >
