@@ -34,6 +34,8 @@
 > `https://www.collabora.com/news-and-blog/blog/2020/06/23/cross-building-rust-gstreamer-plugins-for-the-raspberry-pi/`
 >
 > `https://github.com/rust-lang/rfcs/pull/2873`
+>
+> `https://ferrous-systems.com/blog/embedded-concurrency-patterns/`
 
 
 
