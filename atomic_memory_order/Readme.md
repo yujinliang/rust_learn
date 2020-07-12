@@ -38,11 +38,17 @@
 
 - Memory Barrier
 
-> 内存栅栏是一个令 CPU 或编译器在内存操作上限制内存操作顺序的指令，通常意味着在 barrier 之前的指令一定在 barrier 之后的指令之前执行。
+> 内存栅栏是一个令 CPU (`CPU fence`)或编译器(`compiler fence`)在内存操作上限制内存操作顺序的指令，通常意味着在 barrier 之前的指令一定在 barrier 之后的指令之前执行。
 >
-> 栅栏相当于给内存加了一层栅栏，约束内存乱序。典型用法是和 relaxed一起使用。
+> 栅栏相当于给内存加了一层栅栏，约束内存乱序。典型用法是和 relaxed一起使用。 ***栅栏属于全局操作， 执行栅栏操作可以影响到在线程中的其他原子操作。***
 >
-> 一般来说memory fence分为两层：compiler fence和CPU fence，前者只在编译期生效，目的是防止compiler生成乱序的内存访问指令；后者通过插入或修改特定的CPU指令，在运行时防止内存访问指令乱序执行。
+> 一般来说memory fence分为两层：`compiler fence`和`CPU fence`，前者只在编译期生效，目的是防止compiler生成乱序的内存访问指令；后者通过插入或修改特定的CPU指令，在运行时防止内存访问指令乱序执行。
+>
+> 
+>
+> 好文章我推荐：`https://en.cppreference.com/w/cpp/atomic/atomic_thread_fence` ， `https://blog.csdn.net/wangdamingll/article/details/107024941` ，
+>
+> `https://blog.csdn.net/wxj1992/article/details/103917093` ， `https://zhuanlan.zhihu.com/p/43526907`
 
 
 
@@ -248,6 +254,16 @@ pub enum Ordering {
 
 - ### `volatile`
 
+> `voldatile`关键字首先具有“易变性”，声明为volatile变量编译器会强制要求读内存，相关语句不会直接使用上一条语句对应的的寄存器内容，而是重新从内存中读取。
+>
+> 其次具有”不可优化”性，volatile告诉编译器，不要对这个变量进行各种激进的优化，甚至将变量直接消除，保证代码中的指令一定会被执行。
+>
+> 最后具有“顺序性”，能够保证Volatile变量间的顺序性，编译器不会进行乱序优化。不过要注意与非volatile变量之间的操作，还是可能被编译器重排序的。
+>
+> 需要注意的是其含义跟原子操作无关，比如：volatile int a; a++; 其中a++操作实际对应三条汇编指令实现”读-改-写“操作（`RMW`），并非原子的。
+>
+> 好文章我推荐：`https://zhuanlan.zhihu.com/p/43526907`
+
 
 
 
@@ -259,23 +275,36 @@ pub enum Ordering {
 > ```c++
 > //一个简单的自旋锁
 > struct spinlock {
->     void lock() {
->         bool expected = false;
->         while (!state.compare_exchange_weak( //所谓的自旋锁其实就是加锁失败时不会导致blocking,  一直loop重试。
->                 expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
->             expected = false;
->         }
->     }
+>  void lock() {
+>      bool expected = false;
+>      while (!state.compare_exchange_weak( //所谓的自旋锁其实就是加锁失败时不会导致blocking,  一直loop重试。
+>              expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
+>          expected = false;
+>      }
+>  }
 > 
->     void unlock() {
->         state.store(false, std::memory_order_release);
->     }
+>  void unlock() {
+>      state.store(false, std::memory_order_release);
+>  }
 > private:
->     std::atomic_bool state;
+>  std::atomic_bool state;
 > };
 > ```
 >
-> 好文章我推荐：`https://zhuanlan.zhihu.com/p/31386431`
+> ```c++
+> //最后再来看看SpinLock的实现，所有SpinLock都是基于原子操作进行的，目前我碰到的大致分为两种：
+> 
+> //比较无赖，强制for循环等待
+> //比较友善，在超过一定循环次数，会放弃当前时间片
+> //伪代码：
+> atomic flag
+> while flag:
+>     loop_count++
+>     if loop_count > MAX_LOOP_COUNT:
+>         yield  // iOS中可以是thread_swtich
+> ```
+>
+> 好文章我推荐：`https://zhuanlan.zhihu.com/p/31386431` , `https://www.jianshu.com/p/83f75ce281a2`
 
 
 
@@ -326,3 +355,17 @@ pub enum Ordering {
 > `https://zhuanlan.zhihu.com/p/31386431`
 >
 > `https://zhuanlan.zhihu.com/p/41872203`
+>
+> `https://en.cppreference.com/w/cpp/atomic/atomic_thread_fence`
+>
+> `https://blog.csdn.net/wangdamingll/article/details/107024941`
+>
+> `https://blog.csdn.net/wxj1992/article/details/103917093`
+>
+>  `https://www.jianshu.com/p/83f75ce281a2`
+>
+> `https://zhuanlan.zhihu.com/p/43526907`
+>
+> `https://doc.rust-lang.org/std/sync/atomic/fn.fence.html
+> https://doc.rust-lang.org/std/sync/atomic/fn.compiler_fence.html`
+
