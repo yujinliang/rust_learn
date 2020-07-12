@@ -319,6 +319,12 @@ pub enum Ordering {
 > lock-free编程实现的关键方法：
 >
 > 您可以独立地更新部分数据结构的本地副本，然后使用`CAS`（比较和交换）以原子方式将其应用于共享结构。（避免阻塞）
+>
+> 好文章我推荐：`http://novoland.github.io/%E5%B9%B6%E5%8F%91/2014/07/26/Lock-Free%20%E7%AE%97%E6%B3%95.html` ，
+>
+> `https://zhuanlan.zhihu.com/p/55178835`，`https://lumian2015.github.io/lockFreeProgramming/lock-free-programming.html`，
+>
+> `https://github.com/rigtorp/awesome-lockfree/blob/master/README.md`，`https://loonytek.com/2017/03/17/lock-free-algorithms-part-1/`
 
 
 
@@ -362,10 +368,22 @@ pub enum Ordering {
 >
 > `https://blog.csdn.net/wxj1992/article/details/103917093`
 >
->  `https://www.jianshu.com/p/83f75ce281a2`
+> `https://www.jianshu.com/p/83f75ce281a2`
 >
 > `https://zhuanlan.zhihu.com/p/43526907`
 >
 > `https://doc.rust-lang.org/std/sync/atomic/fn.fence.html
 > https://doc.rust-lang.org/std/sync/atomic/fn.compiler_fence.html`
+>
+> `[http://novoland.github.io/%E5%B9%B6%E5%8F%91/2014/07/26/Lock-Free%20%E7%AE%97%E6%B3%95.html](http://novoland.github.io/并发/2014/07/26/Lock-Free 算法.html)`
+>
+> `https://zhuanlan.zhihu.com/p/53012280`
+>
+> `https://www.jianshu.com/p/baaf53d69b51`
+>
+> `https://blog.csdn.net/huntinux/article/details/54970617`
+>
+> `https://lumian2015.github.io/lockFreeProgramming/lock-free-programming.html`
+>
+> `https://loonytek.com/2017/03/17/lock-free-algorithms-part-1/`
 
