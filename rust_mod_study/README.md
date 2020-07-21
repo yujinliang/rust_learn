@@ -68,6 +68,12 @@ lip3 = {path= "../lip3" }
 
 
 
+- 追加好资料
+
+> `http://www.sheshbabu.com/posts/rust-module-system/`
+
+
+
 [^footnote]: 本文只是随笔，所以不求面面俱到，只针对容易误解的点。
 
 
