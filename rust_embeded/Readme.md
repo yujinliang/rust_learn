@@ -38,6 +38,8 @@
 > `https://ferrous-systems.com/blog/embedded-concurrency-patterns/`
 >
 > `https://micouy.github.io/posts/low-level-pt-1/`
+>
+> `https://avr-rust.com/` for compiling `arduino`
 
 
 
