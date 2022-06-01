@@ -15,3 +15,4 @@
 >
 >> 寻找Rust好职位！
 
+![这是微信二维码图片](https://github.com/yujinliang/rust_learn/blob/master/mmqrcode1654076680683.png?raw=true  "WeiXin QR Code")
