@@ -12,7 +12,8 @@
 > > email: [285779289@qq.com](mailto:285779289@qq.com)
 >
 > > 微信：justice_forever_123
+> > 手机: 13718438106
 >
->> 寻找Rust好职位！
+>> 寻找Rust职位！
 
 ![这是微信二维码图片](./mmqrcode1654076680683.png?raw=true )
