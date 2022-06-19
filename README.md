@@ -11,8 +11,9 @@
 >
 > > email: [285779289@qq.com](mailto:285779289@qq.com)
 >
-> > 微信：justice_forever_123
-> > 手机: 13718438106
+> > 微信：yujinliang-pure
+> 
+> > -----------------------
 >
 >> 寻找Rust职位！
 
