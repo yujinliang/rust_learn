@@ -870,11 +870,11 @@ poll.deregister(&socket).unwrap(); 是真正取消监听注册。
 
 * About me
 
-> 作者：心尘了
+> 作者：灵山行者
 
 > email: [285779289@qq.com](mailto:285779289@qq.com)
 
-> 微信：justice_forever_123
+>
 
 
 
